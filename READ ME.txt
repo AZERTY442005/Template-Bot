@@ -1,0 +1,17 @@
+Credits: AZERTY#9999 AZERTY©2022
+
+Requires:
+	- Node.js https://nodejs.org/en/download/
+	- Modules
+	- Customization
+
+Steps:
+	- Install Node.js by the link
+	- Launch your code editor (like VS Code) and type in the folder "Template Bot" the modules to install:
+		- npm install discord.js
+		- npm install solid-js
+		- npm install fs
+		- npm install ms
+		- npm install moment
+		- npm install crypto
+		- npm install async_hook
