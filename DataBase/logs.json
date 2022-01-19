@@ -1,0 +1,30 @@
+{
+    "525370590413062144": {
+        "message-created": "on",
+        "message-edited": "on",
+        "message-deleted": "on",
+        "message-reaction-added": "off",
+        "message-reaction-removed": "off",
+        "message-reaction-removed-all": "off",
+        "member-joined": "off",
+        "member-left": "off",
+        "member-banned": "off",
+        "member-unbanned": "off",
+        "member-updated": "off",
+        "member-presence-update": "off",
+        "user-updated": "off",
+        "typing-started": "off",
+        "typing-stopped": "off",
+        "guild-updated": "off",
+        "channel-created": "off",
+        "channel-edited": "off",
+        "channel-deleted": "off",
+        "channel-pins-updated": "off",
+        "emoji-created": "off",
+        "emoji-updated": "off",
+        "emoji-deleted": "off",
+        "role-created": "off",
+        "role-updated": "off",
+        "role-deleted": "off"
+    }
+}
