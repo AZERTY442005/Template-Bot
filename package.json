@@ -1,27 +1,37 @@
 {
-  "name": "template-bot",
-  "version": "1.0.0",
-  "description": "Template Bot",
-  "main": "index.js",
-  "Author": "AZERTY#9999",
-  "license": "ISC",
-  "dependencies": {
-    "async_hooks": "^1.0.0",
-    "crypto": "^1.0.1",
-    "discord": "^0.8.2",
-    "discord-reply": "^0.1.2",
-    "discord.js": "^12.5.3",
-    "embed": "^0.0.1",
-    "fs": "^0.0.1-security",
-    "json": "^11.0.0",
-    "message": "^0.0.1",
-    "moment": "^2.29.1",
-    "ms": "^2.1.3",
-    "pretty-format": "^27.4.6",
-    "solid-js": "^1.2.6"
-  },
-  "scripts": {
-    "start": "node index.js"
-  },
-  "author": "AZERTY#9999"
+    "name": "template-bot",
+    "version": "1.0.0",
+    "description": "Template Bot",
+    "main": "index.js",
+    "Author": "AZERTY#9999",
+    "license": "ISC",
+    "dependencies": {
+        "async_hooks": "^1.0.0",
+        "crypto": "^1.0.1",
+        "discord": "^0.8.2",
+        "discord-reply": "^0.1.2",
+        "discord.js": "^12.5.3",
+        "embed": "^0.0.1",
+        "fs": "^0.0.1-security",
+        "json": "^11.0.0",
+        "message": "^0.0.1",
+        "moment": "^2.29.1",
+        "ms": "^2.1.3",
+        "pretty-format": "^27.4.6",
+        "solid-js": "^1.2.6"
+    },
+    "scripts": {
+        "start": "node index.js"
+    },
+    "author": "AZERTY#9999",
+    "engines": {
+        "node": ">=16.6.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/AZERTY442005/Template-Bot.git"
+    },
+    "bugs": {
+        "url": "https://github.com/AZERTY442005/Template-Bot/issues"
+    }
 }
