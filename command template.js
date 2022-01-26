@@ -1,6 +1,7 @@
 module.exports = {
-    name: '',
+    name: "",
     description: "",
+    syntax: "",
     execute(message, args) {
         
     }

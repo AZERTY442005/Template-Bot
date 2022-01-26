@@ -1,24 +1,29 @@
 const { MessageEmbed } = require("discord.js");
-const fs = require("fs")
-const fetch = require('node-fetch');
+const fs = require('fs');
+// const { url } = require("inspector");
 
 module.exports = {
-    name: 'announce',
-    description: "Envoie un message embed pour annoncer",
+    name: 'pub',
+    description: "Envoie une publicité",
     execute(message, args) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!message.member.hasPermission("ADMINISTRATOR") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin", "utf8")=="off") return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
-            if(!args[0]) return message.lineReply("Erreur: Veuillez préciser un message")
-            message.delete()
-            argsresult = args.slice(0).join(" ");
-            let EmbedEmbed = new MessageEmbed()
-                .setTitle("ANNONCE")
-                .setDescription(`${argsresult}`)
+            let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
+            const prefix = prefixes[message.guild.id].prefixes;
+            if(!message.member.hasPermission("MANAGE_MESSAGES")) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Gérer les Messages)")
+            if(!args[0]) return message.lineReply(`Erreur: Vous devez spécifier le titre\n*${prefix}pub <title> <message>*`)
+            if(!args[1]) return message.lineReply(`Erreur: Vous devez spécifier le message\n*${prefix}pub <title> <message>*`)
+            let title = args[0]
+            let description = args.slice(1).join(" ");
+
+            let Embed = new MessageEmbed()
+                .setTitle(`Publicité`)
+                .addField(`${title}`, `${description}`)
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                .setColor("RANDOM")
+                .setColor(message.member.displayHexColor)
                 .setTimestamp()
-                message.channel.send(EmbedEmbed)
+            message.channel.send(Embed)
+            message.delete()
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)

@@ -1,12 +1,14 @@
 {
-    "token" : "OTI3MjEyNDA4ODE1MTA4MTM2.YdG72Q.Yn8teEGK6Wb87JL-oVVSzTTqrb0",
-    "OwnerID" : "452454205056352266",
-    "CreatorID" : "452454205056352266",
-    "BotInfo" : {
-        "name" : "Template Bot",
-        "version" : "1.0",
-        "ID" : "927212408815108136",
-        "CreatedAt" : "2 January 2022",
-        "IconURL" : "http://www.ccmirecourtdompaire.fr/wp-content/uploads/2021/09/document-app-icon-or-logo-icon-design-template-7b6cac8de4b9abdd949f7643fe00924e_screen.jpeg"
-    }
+    "token": "OTI3MjEyNDA4ODE1MTA4MTM2.YdG72Q.Yn8teEGK6Wb87JL-oVVSzTTqrb0",
+    "OwnerID": "452454205056352266",
+    "CreatorID": "452454205056352266",
+    "BotInfo": {
+        "name": "Template Bot",
+        "version": "1.0",
+        "ID": "927212408815108136",
+        "CreatedAt": "2 January 2022",
+        "IconURL": "http://www.ccmirecourtdompaire.fr/wp-content/uploads/2021/09/document-app-icon-or-logo-icon-design-template-7b6cac8de4b9abdd949f7643fe00924e_screen.jpeg"
+    },
+    "redisPath": "//redis-14402.c10.us-east-1-4.ec2.cloud.redislabs.com:14402?ZYMN1LgW4PTYTnToZB5WMgvCHvMLX4w6",
+    "host": "Aucun hébergeur n'est utilisé"
 }

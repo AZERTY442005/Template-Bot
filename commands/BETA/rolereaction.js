@@ -1,24 +1,22 @@
-const { MessageEmbed } = require("discord.js");
-const fs = require("fs")
+const fs = require('fs')
 const fetch = require('node-fetch');
 
 module.exports = {
-    name: 'announce',
-    description: "Envoie un message embed pour annoncer",
+    name: 'rolereaction',
+    description: "Rolereaction",
     execute(message, args) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!message.member.hasPermission("ADMINISTRATOR") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin", "utf8")=="off") return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
-            if(!args[0]) return message.lineReply("Erreur: Veuillez préciser un message")
-            message.delete()
-            argsresult = args.slice(0).join(" ");
-            let EmbedEmbed = new MessageEmbed()
-                .setTitle("ANNONCE")
-                .setDescription(`${argsresult}`)
-                .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                .setColor("RANDOM")
-                .setTimestamp()
-                message.channel.send(EmbedEmbed)
+            
+
+
+
+
+
+
+            
+
+            
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)

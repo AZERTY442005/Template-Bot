@@ -1,39 +1,89 @@
 const { MessageEmbed } = require("discord.js");
+const fs = require("fs")
+const fetch = require('node-fetch');
 
 module.exports = {
     name: "unban",
     description: "unbans a member from the server",
     execute(message, args) {
-        if(!message.member.hasPermission("BAN_MEMBERS")) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Bannir des Membres)")
-        if(!args[0]) return message.lineReply("Erreur: Veuillez préciser un ID d'utilisateur")
+        let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        try {
+            if(!message.member.hasPermission("BAN_MEMBERS") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin", "utf8")=="off") return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Bannir des Membres)")
+            if(!args[0]) return message.lineReply("Erreur: Veuillez préciser un ID d'utilisateur")
 
 
-        let reason = args.slice(1).join(" ");
-        if(!reason) reason = 'Non spécifié';
+            let reason = args.slice(1).join(" ");
+            if(!reason) reason = 'Non spécifié';
 
-        let userID = args[0]
+            let userID = args[0]
 
-        const banembed = new MessageEmbed()
-        .setTitle('UNBAN')
-        .setDescription(`Un utilisateur a été débanni du serveur`)
-        .setAuthor(message.author.tag, message.author.displayAvatarURL())
-        .setColor("#00C632")
-        .addFields(
-            {name:'User Unbanned',value:"<@"+userID+">",inline:true},
-            {name:'Unbanned by',value:message.author,inline:true},
-            {name:'Reason',value:reason,inline:true},
-        )
-        .setTimestamp()
+            const banembed = new MessageEmbed()
+            .setTitle('UNBAN')
+            .setDescription(`Un utilisateur a été débanni du serveur`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("#00C632")
+            .addFields(
+                {name:'User Unbanned',value:"<@"+userID+">",inline:true},
+                {name:'Unbanned by',value:message.author,inline:true},
+                {name:'Reason',value:reason,inline:true},
+            )
+            .setTimestamp()
 
-        message.guild.fetchBans().then(bans=> {
-        if(bans.size == 0) return message.lineReply("Erreur: Aucun utilisateur n'est banni")
-        let bUser = bans.find(b => b.user.id == userID)
-        if(!bUser) return message.lineReply("Erreur: Cet utilisateur n'est pas banni")
-        message.guild.members.unban(bUser.user, `${message.author.tag}: ${reason}`)
-        message.delete()
-        message.channel.send(banembed);
-        })
-
-        
+            message.guild.fetchBans().then(bans=> {
+            if(bans.size == 0) return message.lineReply("Erreur: Aucun utilisateur n'est banni")
+            let bUser = bans.find(b => b.user.id == userID)
+            if(!bUser) return message.lineReply("Erreur: Cet utilisateur n'est pas banni")
+            message.guild.members.unban(bUser.user, `${message.author.tag}: ${reason}`)
+            message.delete()
+            message.channel.send(banembed);
+            })
+        } catch (error) { // ERROR PREVENTER
+            console.error(`${error}`)
+            message.lineReply(`Une erreur est survenue`)
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
+            fetch(URL, {
+                "method":"POST",
+                "headers": {"Content-Type": "application/json"},
+                "body": JSON.stringify(
+                    {
+                        "username": `${config["BotInfo"]["name"]} Logs`,
+                        "avatar_url": `${config["BotInfo"]["IconURL"]}`,
+                        "embeds": [
+                        {
+                            "title": "__Error__",
+                            "color": 15208739,
+                            "author": {
+                                "name": `${message.author.username}`,
+                                "icon_url": `${message.author.displayAvatarURL()}`,
+                            },
+                            "fields": [
+                                {
+                                "name": `User`,
+                                "value": `${message.author}`,
+                                "inline": false
+                                },
+                                {
+                                    "name": "Server",
+                                    "value": `${message.guild.name}`,
+                                    "inline": false
+                                },
+                                {
+                                "name": `Command`,
+                                "value": `${message.content}`,
+                                "inline": false
+                                },
+                                {
+                                "name": `Error`,
+                                "value": `${error}`,
+                                "inline": false
+                                }
+                            ],
+                        }
+                        ]
+                    }
+                )
+            })
+            .catch(err => PassThrough);
+        }
     }
 }

@@ -1,24 +1,45 @@
-const { MessageEmbed } = require("discord.js");
-const fs = require("fs")
+const fs = require('fs')
 const fetch = require('node-fetch');
 
 module.exports = {
-    name: 'announce',
-    description: "Envoie un message embed pour annoncer",
+    name: 'mute',
+    description: "Mute quelqu'un",
     execute(message, args) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!message.member.hasPermission("ADMINISTRATOR") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin", "utf8")=="off") return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
-            if(!args[0]) return message.lineReply("Erreur: Veuillez préciser un message")
-            message.delete()
-            argsresult = args.slice(0).join(" ");
-            let EmbedEmbed = new MessageEmbed()
-                .setTitle("ANNONCE")
-                .setDescription(`${argsresult}`)
-                .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                .setColor("RANDOM")
-                .setTimestamp()
-                message.channel.send(EmbedEmbed)
+            let CheckRole = message.guild.roles.cache.find(role => role.name === "new role");
+
+            if(!CheckRole) message.guild.roles.create({name:"new role", color: "818386", mentionable: false, permissions:[]});
+            let myRole = message.guild.roles.cache.find(role => role.name === "new role");
+            
+
+
+
+            // get role by ID
+            // let myRole = message.guild.roles.cache.get("264410914592129025");
+
+            // get role by name
+            // let myRole = message.guild.roles.cache.find(role => role.name === "Moderators");
+
+            // Add role to a member
+            // member.roles.add(role).catch(console.error);
+            // member.roles.remove(role).catch(console.error);
+
+            // assuming role.id is an actual ID of a valid role:
+            // if (message.member.roles.cache.has(role.id)) {
+            //     console.log("Yay, the author of the message has the role!");
+            // }
+            // else {
+            //     console.log("Nope, noppers, nadda.");
+            // }
+
+            // Check if they have one of many roles
+            // if (message.member.roles.cache.some(r=>["Dev", "Mod", "Server Staff", "Proficient"].includes(r.name)) ) {
+            //     // has one of the roles
+            // }
+            // else {
+            //     // has none of the roles
+            // }
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
