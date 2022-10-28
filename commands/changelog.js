@@ -1,49 +1,34 @@
+const { MessageEmbed } = require("discord.js");
 const fs = require('fs')
 const fetch = require('node-fetch');
 
 module.exports = {
-    name: 'mute',
-    description: "Mute quelqu'un",
+    name: 'changelog',
+    description: "Changelog",
+    usage: "changelog",
+    category: "Default",
     execute(message, args) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            let CheckRole = message.guild.roles.cache.find(role => role.name === "new role");
-
-            if(!CheckRole) message.guild.roles.create({name:"new role", color: "818386", mentionable: false, permissions:[]});
-            let myRole = message.guild.roles.cache.find(role => role.name === "new role");
+            let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
+            const prefix = prefixes[message.guild.id].prefixes;
             
+            const changelog = JSON.parse(fs.readFileSync("./DataBase/changelog.json", "utf8"))
 
+            let Embed = new MessageEmbed()
+                .setTitle("CHANGELOG")
+                .setAuthor(message.author.tag, message.author.displayAvatarURL())
+                .setColor("#009EE2")
+                for(let i=0;i<Object.keys(changelog).length;i++) {
+                    Embed.addField(Object.keys(changelog)[i], Object.values(changelog)[i])
+                }
+                Embed.setTimestamp()
+            message.channel.send(Embed)
 
-
-            // get role by ID
-            // let myRole = message.guild.roles.cache.get("264410914592129025");
-
-            // get role by name
-            // let myRole = message.guild.roles.cache.find(role => role.name === "Moderators");
-
-            // Add role to a member
-            // member.roles.add(role).catch(console.error);
-            // member.roles.remove(role).catch(console.error);
-
-            // assuming role.id is an actual ID of a valid role:
-            // if (message.member.roles.cache.has(role.id)) {
-            //     console.log("Yay, the author of the message has the role!");
-            // }
-            // else {
-            //     console.log("Nope, noppers, nadda.");
-            // }
-
-            // Check if they have one of many roles
-            // if (message.member.roles.cache.some(r=>["Dev", "Mod", "Server Staff", "Proficient"].includes(r.name)) ) {
-            //     // has one of the roles
-            // }
-            // else {
-            //     // has none of the roles
-            // }
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},
@@ -55,6 +40,8 @@ module.exports = {
                         {
                             "title": "__Error__",
                             "color": 15208739,
+                            "timestamp": new Date(),
+                            "timestamp": new Date(),
                             "author": {
                                 "name": `${message.author.username}`,
                                 "icon_url": `${message.author.displayAvatarURL()}`,

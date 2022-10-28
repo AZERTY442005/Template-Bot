@@ -6,6 +6,8 @@ const {format: prettyFormat} = require('pretty-format');
 module.exports = {
     name: 'xp',
     description: "Gère le Système d'XP du serveur",
+    usage: "xp help",
+    category: "Utility",
     execute(message, args) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
@@ -113,9 +115,9 @@ module.exports = {
                 });
                 let EmbedStatus = new MessageEmbed()
                 .setTitle(`XP SYSTEM`)
+                .setDescription(`Le système d'XP a été changé sur **${args[0]}**`)
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
                 .setColor("AQUA")
-                .addField(`Le système d'XP a été changé sur ${args[0]}`)
                 .setTimestamp()
                 message.channel.send(EmbedStatus)
             }
@@ -177,7 +179,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},
@@ -189,6 +191,7 @@ module.exports = {
                         {
                             "title": "__Error__",
                             "color": 15208739,
+                            "timestamp": new Date(),
                             "author": {
                                 "name": `${message.author.username}`,
                                 "icon_url": `${message.author.displayAvatarURL()}`,

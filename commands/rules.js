@@ -5,6 +5,8 @@ const fetch = require('node-fetch');
 module.exports = {
     name: 'rules',
     description: "Créer un règlement sur le serveur",
+    usage: "rules help",
+    category: "Utility",
     execute(message, args) {
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
@@ -38,13 +40,13 @@ module.exports = {
                     message.author.send(EmbedSend)
                     message.lineReply("Le règlement vous a été envoyé en messages privés")
                 } else {
-                    if(!message.member.hasPermission("ADMINISTRATOR") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin", "utf8")=="off") return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur")
+                    if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
                     usermention.send(EmbedSend)
                     message.delete()
                 }
                 return
             }
-            if(!message.member.hasPermission("ADMINISTRATOR") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin", "utf8")=="off") return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur")
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
             // if(args[0]=="add") { // ADD RULE
             //     let title = args[1]
             //     let description = args.slice(2).join(" ");
@@ -134,7 +136,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},
@@ -146,6 +148,7 @@ module.exports = {
                         {
                             "title": "__Error__",
                             "color": 15208739,
+                            "timestamp": new Date(),
                             "author": {
                                 "name": `${message.author.username}`,
                                 "icon_url": `${message.author.displayAvatarURL()}`,

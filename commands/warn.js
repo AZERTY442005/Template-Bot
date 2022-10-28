@@ -6,12 +6,14 @@ const {format: prettyFormat} = require('pretty-format'); // CommonJS
 module.exports = {
     name: 'warn',
     description: "Averti un utilisateur",
+    usage: "warn <user> <reason>",
+    category: "Moderation",
     execute(message, args) {
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!message.member.hasPermission("KICK_MEMBERS") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin", "utf8")=="off") return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Kick des Membres)")
+            if(!(message.member.hasPermission("KICK_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Kick des Membres)")
             if(!args[0])return message.lineReply(`Erreur: Vous devez préciser la personne\n${prefix}*warn <user> <reason>*`)
 
             // console.log("TEST0")
@@ -61,11 +63,8 @@ module.exports = {
             .setThumbnail(AvatarWarn)
             .addFields(
                 {name:"Modérateur",value:`${message.author}`,inline:true},
-                {name:"Membre Averti",value:`${UserWarn}`,inline:true},
+                {name:"Membre",value:`${UserWarn}`,inline:true},
                 {name:"Raison",value:`${ReasonWarn}`,inline:true},
-                // {name:"Mod ID",value:`${message.author.id}`,inline:true},
-                // {name:"Warned ID",value:`${UserWarn.id}`,inline:true},
-                // {name:"Date (M/D/Y)",value:`${new Intl.DateTimeFormat("en-US").format(Date.now())}`,inline:true}
             )
             .setTimestamp()
             message.channel.send(EmbedWarn)
@@ -84,7 +83,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},
@@ -96,6 +95,7 @@ module.exports = {
                         {
                             "title": "__Error__",
                             "color": 15208739,
+                            "timestamp": new Date(),
                             "author": {
                                 "name": `${message.author.username}`,
                                 "icon_url": `${message.author.displayAvatarURL()}`,

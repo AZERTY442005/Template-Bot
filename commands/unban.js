@@ -2,30 +2,44 @@ const { MessageEmbed } = require("discord.js");
 const fs = require("fs")
 const fetch = require('node-fetch');
 
+function getBannedIdFromMention(mention) {
+    if (!mention) return;
+    if (mention.startsWith('<@!') && mention.endsWith('>')) {
+        mention = mention.slice(3, -1);
+        // if (mention.startsWith('!')) mention = mention.slice(1);
+        return mention;
+    }
+}
+
 module.exports = {
     name: "unban",
-    description: "unbans a member from the server",
+    description: "Débanni un membre",
+    usage: "unban <userID> (<reason>)",
+    category: "Moderation",
     execute(message, args) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!message.member.hasPermission("BAN_MEMBERS") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin", "utf8")=="off") return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Bannir des Membres)")
+            if(!(message.member.hasPermission("BAN_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Bannir des Membres)")
             if(!args[0]) return message.lineReply("Erreur: Veuillez préciser un ID d'utilisateur")
 
 
             let reason = args.slice(1).join(" ");
             if(!reason) reason = 'Non spécifié';
 
-            let userID = args[0]
+            // let userMention = message.mentions.users.first()
+            let userID
+            userID = getBannedIdFromMention(args[0]) || args[0]
 
+            
             const banembed = new MessageEmbed()
             .setTitle('UNBAN')
             .setDescription(`Un utilisateur a été débanni du serveur`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("#00C632")
             .addFields(
-                {name:'User Unbanned',value:"<@"+userID+">",inline:true},
-                {name:'Unbanned by',value:message.author,inline:true},
-                {name:'Reason',value:reason,inline:true},
+                {name:'Modérateur',value:message.author,inline:true},
+                {name:'Membre',value:"<@"+userID+">",inline:true},
+                {name:'Raison',value:reason,inline:true},
             )
             .setTimestamp()
 
@@ -40,7 +54,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},
@@ -52,6 +66,7 @@ module.exports = {
                         {
                             "title": "__Error__",
                             "color": 15208739,
+                            "timestamp": new Date(),
                             "author": {
                                 "name": `${message.author.username}`,
                                 "icon_url": `${message.author.displayAvatarURL()}`,

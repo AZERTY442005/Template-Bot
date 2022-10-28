@@ -1,26 +1,35 @@
-const fs = require('fs')
-const fetch = require('node-fetch');
+const { MessageEmbed } = require("discord.js");
+const fs = require('fs');
+// const { url } = require("inspector");
 
 module.exports = {
-    name: 'rolereaction',
-    description: "Rolereaction",
+    name: 'pub',
+    description: "Envoie une publicité",
+    usage: "pub <title> <message>",
+    category: "Utility",
     execute(message, args) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            
+            let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
+            const prefix = prefixes[message.guild.id].prefixes;
+            if(!message.member.hasPermission("MANAGE_MESSAGES")) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Gérer les Messages)")
+            if(!args[0]) return message.lineReply(`Erreur: Vous devez spécifier le titre\n*${prefix}pub <title> <message>*`)
+            if(!args[1]) return message.lineReply(`Erreur: Vous devez spécifier le message\n*${prefix}pub <title> <message>*`)
+            let title = args[0]
+            let description = args.slice(1).join(" ");
 
-
-
-
-
-
-            
-
-            
+            let Embed = new MessageEmbed()
+                .setTitle(`Publicité`)
+                .addField(`${title}`, `${description}`)
+                .setAuthor(message.author.tag, message.author.displayAvatarURL())
+                .setColor(message.member.displayHexColor)
+                .setTimestamp()
+            message.channel.send(Embed)
+            message.delete()
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},
@@ -32,6 +41,7 @@ module.exports = {
                         {
                             "title": "__Error__",
                             "color": 15208739,
+                            "timestamp": new Date(),
                             "author": {
                                 "name": `${message.author.username}`,
                                 "icon_url": `${message.author.displayAvatarURL()}`,

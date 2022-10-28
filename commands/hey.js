@@ -3,6 +3,8 @@ const fs = require('fs')
 module.exports = {
     name: 'hey',
     description: "Te répond hey!!!",
+    usage: "hey",
+    category: "Default",
     execute(message, prefix, token, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
@@ -14,7 +16,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},
@@ -26,6 +28,7 @@ module.exports = {
                         {
                             "title": "__Error__",
                             "color": 15208739,
+                            "timestamp": new Date(),
                             "author": {
                                 "name": `${message.author.username}`,
                                 "icon_url": `${message.author.displayAvatarURL()}`,

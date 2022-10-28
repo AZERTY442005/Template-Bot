@@ -1,14 +1,17 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require('fs')
 const fetch = require('node-fetch');
+const {format: prettyFormat} = require('pretty-format');
 
 module.exports = {
     name: '8ball',
     description: "Magic 8ball",
+    usage: "8ball <wish>",
+    category: "Fun",
     execute(message, args) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
+            let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"))
             const prefix = prefixes[message.guild.id].prefixes;
             if(!args[0]) return message.lineReply(`Erreur: Vous devez spécifier le souhait\n*${prefix}8ball <souhait>*`)
             const anwsers = [
@@ -44,7 +47,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},
@@ -56,6 +59,7 @@ module.exports = {
                         {
                             "title": "__Error__",
                             "color": 15208739,
+                            "timestamp": new Date(),
                             "author": {
                                 "name": `${message.author.username}`,
                                 "icon_url": `${message.author.displayAvatarURL()}`,

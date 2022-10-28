@@ -4,14 +4,16 @@ const fetch = require('node-fetch');
 const {format: prettyFormat} = require('pretty-format');
 
 module.exports = {
-    name: 'logs2',
+    name: 'oldlogs',
     description: "Journal d'évènements",
+    usage: "oldlogs help",
+    category: "Utility",
     execute(message, args) {
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!message.member.hasPermission("ADMINISTRATOR") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin", "utf8")=="off") return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur")
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
             let logs = JSON.parse(fs.readFileSync("./DataBase/logs.json", "utf8"));
             if(!logs[message.guild.id]) logs[message.guild.id] = {}
 
@@ -91,9 +93,9 @@ module.exports = {
             }
 
             for(let i=0;i<modules.length;i++) {
-                if(!logs[message.guild.id][modules[i]]) logs[message.guild.id][modules[i]] = "off"
+                logs[message.guild.id][modules[i]] = "off"
             }
-            fs.writeFile("./DataBase/logs.json", JSON.stringify(logs, null, 4), (err) => {
+            fs.writeFile("./DataBase/logs.json", JSON.stringify(logs), (err) => {
                 if (err) console.error();
             });
 
@@ -140,63 +142,27 @@ module.exports = {
                 message.channel.send(EmbedList)
             }
             if(args[0]=="on" || args[0]=="off") {
-                let EmbedAdd = new MessageEmbed()
-                
                 if(!args[1]) {
-                    console.log("ALL")
                     // TOGGLE ALL MODULES
-                    EmbedAdd.setDescription(`Tous les modules ont été mis sur ${args[0]}`)
-                    for(let i=0;i<modules.length;i++) {
-                        logs[message.guild.id][modules[i]] = args[0]
-                    }
                 }
                 if(Object.keys(categories).includes(args[1])) {
                     console.log("CATEGORY")
                     // TOGGLE CATEGORY
-                    console.log(prettyFormat(Object.keys(categories)))
-                    console.log(categories[args[1]])
-                    EmbedAdd.setDescription(`La catégorie ${args[1][0].toUpperCase() + args[1].substring(1)} a été mis sur ${args[0]}`)
-                    for(let i=0;i<categories[args[1]].length;i++) {
-                        console.log(logs[message.guild.id][categories[args[1]][i]])
-                        logs[message.guild.id][categories[args[1]][i]] = args[0]
-                    }
                 } else if (modules.includes(args[1])) {
                     console.log("MODULE")
                     // TOGGLE MODULE
-                    EmbedAdd.setDescription(`Le module ${args[1][0].toUpperCase() + args[1].substring(1)} a été mis sur ${args[0]}`)
-                    logs[message.guild.id][modules[args[1]]] = args[0]
                 } else {
                     message.lineReply(`Erreur: Ce module ou cette catégorie n'est pas reconnue: \`${args[1]}\``)
                     return
                 }
-                
-                fs.writeFile("./DataBase/logs.json", JSON.stringify(logs, null, 4), (err) => {
-                if (err) console.error();
-                });
-                
-                
-                EmbedAdd.setTitle(`LOGS UPDATED`)
+
+                let EmbedAdd = new MessageEmbed()
+                .setTitle(`LOGS LIST`)
                 .setColor("GOLD")
-                .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                // .addField(`${args[1]}`, `${args[0]}`)
+                .addField(`d`, `q`)
                 .setTimestamp()
                         
                 message.channel.send(EmbedAdd)
-            }
-            if(args[0]=="channel") {
-                if(!args[1]) return message.lineReply(`Erreur: Veuillez préciser l'ID du salon\n*${prefix}logs channel <channel-ID>*`)
-                channel = message.guild.channels.cache.get(args[1])
-                if(!channel) return message.lineReply(`Erreur: Veuillez préciser un ID de salon valide`)
-                
-                logs[message.guild.id]["channel"] = args[1]
-                
-                let EmbedChannel = new MessageEmbed()
-                .setTitle(`LOGS CHANNEL`)
-                .setColor("GOLD")
-                .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                .addField(`Le salon des logs a été changé`, `<#${args[1]}>`)
-                .setTimestamp()
-                message.channel.send(EmbedChannel)
             }
             
 
@@ -220,7 +186,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},
@@ -232,6 +198,8 @@ module.exports = {
                         {
                             "title": "__Error__",
                             "color": 15208739,
+                            "timestamp": new Date(),
+                            "timestamp": new Date(),
                             "author": {
                                 "name": `${message.author.username}`,
                                 "icon_url": `${message.author.displayAvatarURL()}`,
