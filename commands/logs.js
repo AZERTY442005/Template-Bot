@@ -11,7 +11,7 @@ module.exports = {
         const prefix = prefixes[message.guild.id].prefixes;
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
+            if(!message.member.hasPermission("ADMINISTRATOR") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin", "utf8")=="off") return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur")
             let logs = JSON.parse(fs.readFileSync("./DataBase/logs.json", "utf8"));
             if(!logs[message.guild.id]) logs[message.guild.id] = {}
 
@@ -184,7 +184,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},

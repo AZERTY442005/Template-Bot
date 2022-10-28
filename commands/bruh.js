@@ -34,7 +34,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},

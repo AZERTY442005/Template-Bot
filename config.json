@@ -7,11 +7,10 @@
 
     "BotInfo": {
         "name": "Template Bot",
-        "version": "1.1.2",
+        "version": "1.1.0",
         "ID": "Bot ID",
-        "CreatedAt": "30 January 2022",
+        "CreatedAt": "14 January 2022",
         "IconURL": "http://..."
     },
-    "host": "https://...",
-    "DEBUG": false
+    "host": "https://..."
 }

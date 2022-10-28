@@ -1,8 +1,5 @@
-const { MessageEmbed } = require("discord.js");
 const fs = require('fs')
-const ms = require('ms')
 const fetch = require('node-fetch');
-const { PassThrough } = require("stream");
 
 module.exports = {
     name: 'mute',
@@ -10,102 +7,43 @@ module.exports = {
     execute(message, args) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
-            const prefix = prefixes[message.guild.id].prefixes;
-            if(!(message.member.hasPermission("KICK_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Kick des Membres)")
-            if(!args[0]) return message.lineReply(`Erreur: Veuillez préciser l'utilisateur\n*${prefix}mute <user> <time> <reason>*`)
-            if(!args[1]) return message.lineReply(`Erreur: Veuillez préciser une durée (ex: 1h, 3j, 2w, def)\n*${prefix}mute <user> <time> <reason>*`)
-            const MuteUser = message.mentions.users.first();
+            let CheckRole = message.guild.roles.cache.find(role => role.name === "new role");
 
-            let durationDisplay = args[1]
-            let duration = ms(args[1])
-            if(durationDisplay=="def" || durationDisplay=="perm") duration = "def"
-            if(!duration) return message.lineReply(`Erreur: Veuillez préciser une durée valide`)
-
-            const reason = args.slice(2).join(" ");
-            if(!reason) return message.lineReply(`Erreur: Veuillez préciser une raison`)
-
-
-            function GiveMuteRole() {
-                let MuteRole = message.guild.roles.cache.find(role => role.name === "Muted");
-                message.guild.member(MuteUser).roles.add(MuteRole, `${message.author.tag}: ${reason}`).catch(console.error);
-
-                const Embed = new MessageEmbed()
-                .setTitle("MUTE")
-                .setDescription(`Un utilisateur a été mute`)
-                .setAuthor(MuteUser.tag, MuteUser.displayAvatarURL())
-                .setColor("#E2A100")
-                .setThumbnail(MuteUser.displayAvatarURL())
-                .addFields(
-                    {name:"Modérateur",value:`${message.author}`,inline:true},
-                    {name:"Membre",value:`${MuteUser}`,inline:true},
-                    {name:"Durée",value:`${durationDisplay}`,inline:true},
-                    {name:"Raison",value:`${reason}`,inline:true},
-                )
-                .setTimestamp()
-                message.delete()
-                message.channel.send(Embed)
-
-                if(duration!="def") {
-                    fs.writeFile("./DataBase/requests.txt", `${parseInt(fs.readFileSync("./DataBase/requests.txt", "utf8"))+1}`, (err) => {
-                        if (err) console.error();
-                    })
-                    setTimeout(function(){
-                        const Embed = new MessageEmbed()
-                        .setTitle("UNMUTE")
-                        .setDescription(`Un utilisateur a été unmute automatiquement au bout de **${durationDisplay}**`)
-                        .setAuthor(MuteUser.tag, MuteUser.displayAvatarURL())
-                        .setColor("#79E300")
-                        .setThumbnail(MuteUser.displayAvatarURL())
-                        .setTimestamp()
-                        message.channel.send(Embed)
-                        const Embed2 = new MessageEmbed()
-                        .setTitle("UNMUTE")
-                        .setDescription(`Tu as été unmute de __${message.guild.name}__ automatiquement au bout de **${durationDisplay}**`)
-                        .setAuthor(MuteUser.tag, MuteUser.displayAvatarURL())
-                        .setColor("#79E300")
-                        .setThumbnail(MuteUser.displayAvatarURL())
-                        .setTimestamp()
-                        MuteUser.send(Embed2)
-                        message.guild.member(MuteUser).roles.remove(MuteRole, `Unmute automatique au bout de ${durationDisplay}`).catch(console.error);
-                        fs.writeFile("./DataBase/requests.txt", `${parseInt(fs.readFileSync("./DataBase/requests.txt", "utf8"))-1}`, (err) => {
-                            if (err) console.error();
-                        })
-                    }, duration)
-                }
-            }
-
-
-            let CheckMuteRole = message.guild.roles.cache.find(role => role.name === "Muted");
-            if(!CheckMuteRole) {
-                // message.guild.roles.create({name:"Muted", color: "818386", mentionable: false, permissions:[]});
-
-                async function CreateMuteRole() {
-                    await message.guild.roles.create({
-                        data: {
-                          name: 'Muted',
-                          color: '818386'
-                        },
-                    }).then(role => {
-                        message.guild.channels.cache.forEach(async (channel, id) => {
-                            await channel.createOverwrite(role, {
-                               SEND_MESSAGES: false,
-                            });
-                         });
-                    }).catch(console.error);
-                    
-
-                    GiveMuteRole()
-                }
-                CreateMuteRole()
-            } else GiveMuteRole()
+            if(!CheckRole) message.guild.roles.create({name:"new role", color: "818386", mentionable: false, permissions:[]});
+            let myRole = message.guild.roles.cache.find(role => role.name === "new role");
+            
 
 
 
+            // get role by ID
+            // let myRole = message.guild.roles.cache.get("264410914592129025");
+
+            // get role by name
+            // let myRole = message.guild.roles.cache.find(role => role.name === "Moderators");
+
+            // Add role to a member
+            // member.roles.add(role).catch(console.error);
+            // member.roles.remove(role).catch(console.error);
+
+            // assuming role.id is an actual ID of a valid role:
+            // if (message.member.roles.cache.has(role.id)) {
+            //     console.log("Yay, the author of the message has the role!");
+            // }
+            // else {
+            //     console.log("Nope, noppers, nadda.");
+            // }
+
+            // Check if they have one of many roles
+            // if (message.member.roles.cache.some(r=>["Dev", "Mod", "Server Staff", "Proficient"].includes(r.name)) ) {
+            //     // has one of the roles
+            // }
+            // else {
+            //     // has none of the roles
+            // }
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-.txt", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},

@@ -1,6 +1,0 @@
-{
-    "1.1.2": "Added Mute & Unmute commands.\nReactionRole, Polls and Block-link soon !!",
-    "1.1.1": "Fixing permissions issues",
-    "1.1.0": "Added Error Preventer",
-    "1.0": "Bot Main Creation & commands:\n*help, hey, ping, settings, credits, invite, ban, unban, clear, kick, report, warn, warns, slowmode, lock, announce, avatar, dm, embed, ghostping, serverinfo, userinfo, bruh, roll, 8ball, love, experience*"
-}

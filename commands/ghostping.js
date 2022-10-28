@@ -1,5 +1,4 @@
 const fs = require("fs")
-const fetch = require('node-fetch');
 
 module.exports = {
     name: 'ghostping',
@@ -7,13 +6,13 @@ module.exports = {
     execute(message, args) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("MANAGE_MESSAGES") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Gérer les Messages)")
+            if(!message.member.hasPermission("MANAGE_MESSAGES") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin", "utf8")=="off") return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Gérer les Messages)")
             if(!args[0]) return message.lineReply("Erreur: Veuillez préciser un utilisateur")
             message.delete()
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},

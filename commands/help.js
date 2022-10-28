@@ -58,8 +58,6 @@ module.exports = {
                     {name:`${prefix}ban <user> (<reason>)`,value:"Ban un utilisateur", inline:true},
                     {name:`${prefix}unban <user> (<reason>)`,value:"Débanni un utilisateur", inline:true},
                     {name:`${prefix}kick <user> (<reason>)`,value:"Kick un utilisateur", inline:true},
-                    {name:`${prefix}mute <user> <time> <reason>`,value:"Kick un utilisateur", inline:true},
-                    {name:`${prefix}unmute <user> (<reason>)`,value:"Kick un utilisateur", inline:true},
                     {name:`${prefix}report <user> <reason>`,value:"Report un utilisateur", inline:true},
                     {name:`${prefix}clear <nb>`,value:"Supprime des messages", inline:true},
                     {name:`${prefix}warn <user> <reason>`,value:"Warn un utilisateur", inline:true},
@@ -67,11 +65,6 @@ module.exports = {
                     {name:`${prefix}slowmode <time>`,value:"Change le Slowmode du salon actuel", inline:true},
                     {name:`${prefix}lock <reason> (<role>)`,value:"Verrouille un salon pour certains rôles", inline:true},
                 )
-            message.author.send(EmbedHelp1)
-
-            let EmbedHelp2 = new MessageEmbed()
-                .setColor("GOLD")
-                .addField("__**Fun**__", "Commandes d'amusement")
                 .addField("__**Utilitaire**__", "Commandes Supplémentaires et utiles")
                 .addFields(
                     {name:`${prefix}announce <msg>`,value:"Envoie un message embed pour annoncer", inline:true},
@@ -87,6 +80,11 @@ module.exports = {
                     {name:`${prefix}logs <action>`,value:"Système de journal d'actions", inline:true},
                     {name:`${prefix}xp <action>`,value:"Système d'Expérience", inline:true},
                 )
+            message.author.send(EmbedHelp1)
+
+            let EmbedHelp2 = new MessageEmbed()
+                .setColor("GOLD")
+                .addField("__**Fun**__", "Commandes d'amusement")
                 .addFields(
                     {name:`${prefix}bruh`,value:"Envoie un GIF aléatoire de bruh", inline:true},
                     {name:`${prefix}roll`,value:"Choisi un nombre aléatoire entre 1 et 6", inline:true},
@@ -110,7 +108,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},
