@@ -1,1 +1,30 @@
-{"525370590413062144":{"message-created":"off","message-edited":"off","message-deleted":"off","message-reaction-added":"off","message-reaction-removed":"off","message-reaction-removed-all":"off","member-joined":"off","member-left":"off","member-banned":"off","member-unbanned":"off","member-updated":"off","member-presence-update":"off","user-updated":"off","typing-started":"off","typing-stopped":"off","guild-updated":"off","channel-created":"off","channel-edited":"off","channel-deleted":"off","channel-pins-updated":"off","emoji-created":"off","emoji-updated":"off","emoji-deleted":"off","role-created":"off","role-updated":"off","role-deleted":"off"}}
+{
+    "525370590413062144": {
+        "message-created": "on",
+        "message-edited": "on",
+        "message-deleted": "on",
+        "message-reaction-added": "on",
+        "message-reaction-removed": "on",
+        "message-reaction-removed-all": "on",
+        "member-joined": "on",
+        "member-left": "on",
+        "member-banned": "on",
+        "member-unbanned": "on",
+        "member-updated": "on",
+        "member-presence-update": "on",
+        "user-updated": "on",
+        "typing-started": "on",
+        "typing-stopped": "on",
+        "guild-updated": "on",
+        "channel-created": "on",
+        "channel-edited": "on",
+        "channel-deleted": "on",
+        "channel-pins-updated": "on",
+        "emoji-created": "on",
+        "emoji-updated": "on",
+        "emoji-deleted": "on",
+        "role-created": "on",
+        "role-updated": "on",
+        "role-deleted": "on"
+    }
+}

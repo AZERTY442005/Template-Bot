@@ -10,7 +10,7 @@ module.exports = {
         try {
             let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
             const prefix = prefixes[message.guild.id].prefixes;
-            if(!message.member.hasPermission("MANAGE_MESSAGES")) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Gérer les Messages)")
+            if(!(message.member.hasPermission("MANAGE_MESSAGES") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Gérer les Messages)")
             if(!args[0]) return message.lineReply(`Erreur: Vous devez spécifier le titre\n*${prefix}pub <title> <message>*`)
             if(!args[1]) return message.lineReply(`Erreur: Vous devez spécifier le message\n*${prefix}pub <title> <message>*`)
             let title = args[0]

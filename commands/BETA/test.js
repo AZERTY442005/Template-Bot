@@ -274,20 +274,149 @@ module.exports = {
                 // console.log(Array.from(message.guild.members))
             // }
             if(args[0] == "idsend") {
-                bot.users.get("452454205056352266").send("someMessage");
-                bot.users.cache.get("452454205056352266").send("someMessage");
-                user = bot.users.fetch("452454205056352266").catch(() => null);
-                message.user.send("qlksjudgvk")
-                user = bot.users.cache.find(user => user.id === "452454205056352266")
-                user = bot.get_user("452454205056352266")
-                message.user.send("qlksjudgvk")
-                const user = bot.users.cache.fetch(452454205056352266);
-                user.send();
+                // bot.users.get("452454205056352266").send("someMessage");
+                // bot.users.cache.get("452454205056352266").send("someMessage");
+                // user = bot.users.fetch("452454205056352266").catch(() => null);
+                // message.user.send("qlksjudgvk")
+                // user = bot.users.cache.find(user => user.id === "452454205056352266")
+                // user = bot.get_user("452454205056352266")
+                // message.user.send("qlksjudgvk")
+                // const user = bot.users.cache.fetch(452454205056352266);
+                // user.send();
             }
+            if(args[0] == "getusers") {
+                // const list = bot.guilds.get("id"); 
+                // const list = message.guild
+                // list.fetch().then(r => {
+
+                //     r.members.array().forEach(r => {
+                //     let userid = r.id        
+                //     msg.channel.send(userid)
+                //     })
+                // });
+                // bot.users.fetch()
+                // const users = bot.users.cache.filter(user => !user.bot);
+                // console.log(users.size);
+
+                // // Initialize a storage for the user ids
+                // const userIds = new Set();
+                // // Iterate over all guilds (always cached)
+                // for (const guild of bot.guilds.cache.values()) {
+                //     // Fetch all guild members and iterate over them
+                //     for (const member of guild.members.fetch().values()) {
+                //         // Fetch the user, if user already cached, returns value from cache
+                //         // Will probably always return from cache
+                //         const user = bot.users.fetch(member.id);
+                //         // Check if user id is not already in set and user is not a bot
+                //         if (!userIds.has(user.id) && !user.bot) {
+                //             // Add unique user id to our set
+                //             userIds.add(user.id);
+                //         }
+                //     }
+                // }
+                // // Use .size property to access the size of the set
+                // console.log(userIds.size);
+
+                // var usersCount= 0;
+                // bot.guilds.cache.mapValues(guild => {
+                // const _x = bot.guilds.cache.get(guild.id);
+                //     usersCount += bot.guilds.cache.reduce((a, g) => a + g.memberCount, 0)
+                // });
+                // message.channel.send(usersCount);
+                // usersCount = 0;
+
+                // const guild = message.guild
+                // setInterval(function () {
+                //     var memberCount = guild.members.filter(member => !member.user.bot).size;  
+                //     var memberCountChannel = bot.channels.get("936150358659575839");
+                //     memberCountChannel.setName(`${guild.name} has ${memberCount} members!`);
+                // }, 1000);
+            }
+            if(args[0] == "addperm") {
+                // let role = message.guild.roles.cache.find(r => r.name === "Member");
+                // role.setPermissions(["ADMINISTRATOR"])
+                // role.removePermissions(["ADMINISTRATOR"])
+            }
+            if(args[0] == "files") {
+                // let SendFiles = new Array()
+                // let FilesList = new Array()
+                // const DataBase = fs.readdirSync('./DataBase')
+                // for (const file of DataBase) {
+                //     SendFiles.push(`./DataBase/${file}`)
+                //     FilesList.push(`${file}`)
+                // }
+                // // console.log(prettyFormat(SendFiles))
+                // // console.log(prettyFormat(SendFiles.slice(1, 5)))
+                // // console.log(Math.floor(SendFiles.length/10+1))
+
+                // // message.channel.send("Testing message.", {
+                //     // files: [
+                //     //     "./DataBase/admin",
+                //     //     "./DataBase/auto-react.json",
+                //     //     "./DataBase/beta",
+                //     //     "./DataBase/blacklist.json",
+                //     //     "./DataBase/DATAS.json",
+                //     //     "./DataBase/join-message-channel-id.json",
+                //     //     "./DataBase/join-message-status.json",
+                //     //     "./DataBase/leave-message-channel-id.json",
+                //     //     "./DataBase/leave-message-status.json",
+                //     //     "./DataBase/logs.json",
+                //     //     "./DataBase/prefixes.json",
+                //     //     "./DataBase/rules.json",
+                //     //     "./DataBase/status",
+                //     //     "./DataBase/warns.json",
+                //     //     "./DataBase/webhook-logs-url",
+                //     //     "./DataBase/xp-system.json",
+                //     // ]
+                // //     files: SendFiles
+                // //   });
+
+                // const SendFiles_chunks = SendFiles.map((e, i) => { 
+                //     return i % 10 === 0 ? SendFiles.slice(i, i + 10) : null; 
+                // }).filter(e => { return e; });
+
+                // const Embed = new MessageEmbed()
+                // .setTitle("DataBase")
+                // .setAuthor(message.author.tag, message.author.displayAvatarURL())
+                // .setColor("GOLD")
+                // .addField(`Files`, `${FilesList.join(", ")}`)
+                // .setTimestamp()
+                // message.author.send(Embed)
+
+                // // for(const i=0;i<Math.floor(SendFiles.length/10+1);i++) {
+                // for(const Files in SendFiles_chunks) {
+                //     message.author.send({
+                //         files: SendFiles_chunks[Files]
+                //     })
+                // }
+            }
+            if(args[0] == "chunk") {
+                const chunkSize = 10;
+                const arr = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17];
+                const groups = arr.map((e, i) => { 
+                    return i % chunkSize === 0 ? arr.slice(i, i + chunkSize) : null; 
+                }).filter(e => { return e; });
+                console.log(prettyFormat(groups))
+            }
+            if(args[0] == "embedfiles") {
+                // message.channel.send({
+                //     embed: {
+                //       description: "This is some text",
+                //       image: {
+                //         url: "attachment://twitter.png"
+                //       }
+                //     },
+                //     files: [{
+                //       attachment: './DataBase/admin',
+                //       name: 'twitter.png'
+                //     }]
+                //   });
+            }
+
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             message.lineReply(`Une erreur est survenue`)
-            var URL = fs.readFileSync("./DataBase/webhook-logs-url", "utf8")
+            var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",
                 "headers": {"Content-Type": "application/json"},
