@@ -7,12 +7,15 @@
 
     "BotInfo": {
         "name": "Template Bot",
-        "version": "1.1.3",
+        "version": "1.1.4",
         "ID": "Bot ID",
-        "CreatedAt": "31 January 2022",
+        "CreatedAt": "2 January 2022",
+        "UpdatedAt": "2 February 2022",
         "IconURL": "http://..."
     },
     "host": "https://...",
     "DEBUG": false,
-    "DefaultPrefix": "²"
+    "DefaultPrefix": "²",
+    "DefaultXPStatus": "off",
+    "DefaultAutoReactStatus": "on"
 }

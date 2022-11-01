@@ -7,6 +7,7 @@ const {format: prettyFormat} = require('pretty-format');
 module.exports = {
     name: 'help',
     description: "Permet d'afficher cette page",
+    aliases: [],
     usage: "help",
     category: "Default",
     execute(message, args, bot) {
@@ -198,7 +199,11 @@ module.exports = {
             // .addField(`${prefix}credits`,"Affiche mes credits")
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

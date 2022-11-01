@@ -2,26 +2,29 @@ const { MessageEmbed } = require("discord.js")
 const fs = require("fs")
 const ms = require('ms');
 const fetch = require('node-fetch');
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
+const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'slowmode',
     description: "Toogle Slowmode",
+    aliases: [],
     usage: "slowmode <time>",
     category: "Moderation",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("MANAGE_CHANNELS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Gérer les Salons)")
+            if(!(message.member.hasPermission("MANAGE_CHANNELS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Gérer les Salons", bot, message, __filename)
             let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
             const prefix = prefixes[message.guild.id].prefixes;
-            if(!args[0]) return message.lineReply(`Erreur: Veuillez préciser un délai\n*${prefix}slowmode <time S-H-D>*`)
+            if(!args[0]) return UserError("Veuillez préciser un délai", bot, message, __filename)
             // let time_seconds = args[0]
             
             const time = ms(args[0]) / 1000 // TEST
 
             let reason = args.slice(1).join(" ");
             if(!reason) reason = 'Non spécifié';
-            if(time < 0 || time > 21600 || Number.isNaN(time)) return message.lineReply(`Erreur: Veuillez préciser un délai entre 0 et 21600 secondes\n\`${args[0]} = ${ms(args[0]) / 1000} secondes\``)
+            if(time < 0 || time > 21600 || Number.isNaN(time)) return UserError("Veuillez préciser un délai entre 0 et 21600 secondes", bot, message, __filename)
             message.delete()
             message.channel.setRateLimitPerUser(time, `${message.author.tag}: ${reason}`)
             let Embed = new MessageEmbed()
@@ -40,7 +43,11 @@ module.exports = {
             return
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

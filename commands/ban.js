@@ -1,26 +1,30 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require("fs")
 const fetch = require('node-fetch');
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
+const Error = require("../Functions/Error.js")
+const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'ban',
     description: "Ban un utilisateur",
+    aliases: [],
     usage: "ban <user> <reason>",
     category: "Moderation",
-    execute(message, args) {
+    execute(message, args, bot) {
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("BAN_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Bannir des Membres)")
-            if(!args[0]) return message.lineReply(`Erreur: Veuillez préciser un utilisateur\n*${prefix}ban <user> <reason>*`)
+            if(!(message.member.hasPermission("BAN_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Bannir des Membres", bot, message, __filename)
+            if(!args[0]) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
             const userBan = message.mentions.users.first();
-            if(!userBan) return message.lineReply(`Erreur: Veuillez préciser un utilisateur valide`)
+            if(!userBan) return UserError("Veuillez préciser un utilisateur valide", bot, message, __filename)
             const member = message.guild.member(userBan);
             let reasonBan = args.slice(1).join(" ");
             // if(!reasonBan) reasonBan = 'Non spécifié';
-            if(!reasonBan) return message.lineReply(`Erreur: Veuillez préciser une raison`)
-            if(!member) return message.lineReply(`Erreur: Veuillez préciser un utilisateur valide`)
+            if(!reasonBan) return UserError("Veuillez préciser une raison", bot, message, __filename)
+            if(!member) return UserError("Veuillez préciser un utilisateur valide", bot, message, __filename)
             // console.log(typeof message.author.tag)
             // console.log(typeof reasonBan)
             const ReasonLogs = message.author.tag+": "+reasonBan
@@ -45,14 +49,18 @@ module.exports = {
                 message.delete()
             }).catch(error => {
                 if(error=="DiscordAPIError: Missing Permissions") {
-                    message.lineReply("Erreur: je n'ai pas les permissions suffisantes pour ban cet utilisateur")
+                    Error("Je n'ai pas les permissions suffisantes pour ban cet utilisateur", bot, message, __filename)
                 } else {
-                    message.lineReply(`Erreur: Impossible de ban cet utilisateur\n\`${error}\``)
+                    Error("Impossible de ban cet utilisateur", bot, message, __filename)
                 }
             })
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

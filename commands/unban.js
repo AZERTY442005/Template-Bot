@@ -1,6 +1,9 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require("fs")
 const fetch = require('node-fetch');
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
+const Error = require("../Functions/Error.js")
+const UserError = require("../Functions/UserError.js")
 
 function getBannedIdFromMention(mention) {
     if (!mention) return;
@@ -14,13 +17,14 @@ function getBannedIdFromMention(mention) {
 module.exports = {
     name: "unban",
     description: "Débanni un membre",
+    aliases: [],
     usage: "unban <userID> (<reason>)",
     category: "Moderation",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("BAN_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Bannir des Membres)")
-            if(!args[0]) return message.lineReply("Erreur: Veuillez préciser un ID d'utilisateur")
+            if(!(message.member.hasPermission("BAN_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Bannir des Membres", bot, message, __filename)
+            if(!args[0]) return UserError("Veuillez préciser un ID d'utilisateur", bot, message, __filename)
 
 
             let reason = args.slice(1).join(" ");
@@ -44,16 +48,20 @@ module.exports = {
             .setTimestamp()
 
             message.guild.fetchBans().then(bans=> {
-            if(bans.size == 0) return message.lineReply("Erreur: Aucun utilisateur n'est banni")
+            if(bans.size == 0) return Error("Aucun utilisateur n'est banni", bot, message, __filename)
             let bUser = bans.find(b => b.user.id == userID)
-            if(!bUser) return message.lineReply("Erreur: Cet utilisateur n'est pas banni")
+            if(!bUser) return Error("Cet utilisateur n'est pas banni", bot, message, __filename)
             message.guild.members.unban(bUser.user, `${message.author.tag}: ${reason}`)
             message.delete()
             message.channel.send(banembed);
             })
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

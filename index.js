@@ -17,9 +17,12 @@ bot.helpcommands = new Discord.Collection()
 console.log("Connecting...")
 
 
+// const { UserError } = require("./UserError.js")
+
 
 // GET COMMANDS
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'))
+const commandFiles_AzerDev = fs.readdirSync('./commands/AzerDev').filter(file => file.endsWith('.js'))
 const commandFiles_BETA = fs.readdirSync('./commands/BETA').filter(file => file.endsWith('.js'))
 const commandFiles_hidden = fs.readdirSync('./commands/hidden').filter(file => file.endsWith('.js'))
 for (const file of commandFiles) { // Get Commands
@@ -28,6 +31,10 @@ for (const file of commandFiles) { // Get Commands
     bot.helpcommands.set(command.name, command);
 }
 if(fs.readFileSync("./DataBase/beta.txt", "utf8")=="on") { // Read Command Dirs
+    for (const file of commandFiles_AzerDev) {
+        const command = require(`./commands/AzerDev/${file}`);
+        bot.commands.set(command.name, command, "AzerDev");
+    }
     for (const file of commandFiles_BETA) {
         const command = require(`./commands/BETA/${file}`);
         bot.commands.set(command.name, command);
@@ -196,26 +203,34 @@ bot.on("message", message => { // Message Event
     }
 
     // COMMAND TRIGGER
+    // console.log(message.content)
     if(message.content.startsWith(prefix)){ // Command detected
+    // if(message.content.startsWith(prefix) || message.content.startsWith(`<@${BotInfo["ID"]}>`) || message.content.startsWith(`<@!${BotInfo["ID"]}>`)){ // Command detected
         // if(!DATAS["commands"]) DATAS["commands"]=0
         // DATAS["commands"] = DATAS["commands"] + 1
         // fs.writeFile("./DataBase/DATAS.json", JSON.stringify(DATAS), (err) => {
         //     if (err) console.error();
         // });
 
+        // console.log("COMMANDqsd")
         // IF USER IS BLACKLISTED
         let blacklist = JSON.parse(fs.readFileSync("./DataBase/blacklist.json", "utf8"));
         if(blacklist.includes(message.author.id)) {
-            message.delete()
+            // message.delete()
             message.author.send(`Oups!!! On dirait que tu as été blacklisté, tu ne peux donc pas utiliser mes commandes.\nSi tu penses que c'est une erreur, contacte mon développeur.`)
             return
         }
 
         // COMMAND COOLDOWN
         if (commandedRecently.has(message.author.id) && !message.member.hasPermission("ADMINISTRATOR")) { // Command Cooldown
-            message.lineReply("Veuillez attendre 3 secondes entre chaques commandes");
+            // message.lineReply("Veuillez attendre 3 secondes entre chaques commandes");
+            const Embed = new MessageEmbed()
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setDescription(`:alarm_clock: Veuillez attendre 3 secondes entre chaques commandes`)
+            .setColor("ORANGE")
+            message.lineReplyNoMention(Embed)
         } else {
-            if(!bot.commands.has(command)) return // message.lineReply("Erreur: Cette commande n'existe pas");
+            // if(!bot.commands.has(command)) return // message.lineReply("Erreur: Cette commande n'existe pas");
 
             // GET ALL ARGS
             argsresult = args.join(" ");
@@ -266,8 +281,8 @@ bot.on("message", message => { // Message Event
             if(!message.guild.me.hasPermission("ADMINISTRATOR")) return message.lineReply(`Je ne possède pas les permissions d'Administrateur\nPour profiter des fonctionnalitées, veuillez les activer`)
 
             // EXECUTE ASSOCIED COMMAND
-            bot.commands.get(command).execute(message, args, bot, Discord.Guild, BotInfo, token, prefix, prefixes, bot.prefix, bot.user.id)
-            // bot.commands.get(command).execute(...args, bot)
+            execution = bot.commands.get(command)||bot.commands.find(cmd => cmd.aliases && cmd.aliases.includes(command))
+            if(execution) execution.execute(message, args, bot, Discord.Guild, BotInfo, token, prefix, prefixes, bot.prefix, bot.user.id)
 
 
             // UPDATE COOLDOWN
@@ -287,7 +302,7 @@ bot.on("message", message => { // Message Event
         let xp_system = JSON.parse(fs.readFileSync("./DataBase/xp-system.json", "utf8"))
         if(!xp_system["status"]) xp_system["status"] = {}
         if(!xp_system["status"][message.guild.id]) {
-            xp_system["status"][message.guild.id] = "on"
+            xp_system["status"][message.guild.id] = `${JSON.parse(fs.readFileSync("./config.json", "utf8"))["DefaultXPStatus"]}`
         }
         if(!xp_system["messages"]) xp_system["messages"] = {}
         if(!xp_system["messages"][message.guild.id]) xp_system["messages"][message.guild.id] = {}
@@ -337,7 +352,7 @@ bot.on("message", message => { // Message Event
         let auto_react = JSON.parse(fs.readFileSync("./DataBase/auto-react.json", "utf8"))
         if(!auto_react[message.guild.id]) {
             auto_react[message.guild.id] = {
-                auto_react: "off"
+                auto_react: `${JSON.parse(fs.readFileSync("./config.json", "utf8"))["DefaultAutoReactStatus"]}`
             }
             fs.writeFile("./DataBase/auto-react.json", JSON.stringify(auto_react), (err) => {
                 if (err) console.error();

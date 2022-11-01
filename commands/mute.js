@@ -3,29 +3,32 @@ const fs = require('fs')
 const ms = require('ms')
 const fetch = require('node-fetch');
 const { PassThrough } = require("stream");
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
+const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'mute',
     description: "Mute quelqu'un",
+    aliases: [],
     usage: "mute <user> <time> <reason>",
     category: "Moderation",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
             let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
             const prefix = prefixes[message.guild.id].prefixes;
-            if(!(message.member.hasPermission("KICK_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Kick des Membres)")
-            if(!args[0]) return message.lineReply(`Erreur: Veuillez préciser l'utilisateur\n*${prefix}mute <user> <time> <reason>*`)
-            if(!args[1]) return message.lineReply(`Erreur: Veuillez préciser une durée (ex: 1h, 3j, 2w, def)\n*${prefix}mute <user> <time> <reason>*`)
+            if(!(message.member.hasPermission("KICK_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Kick des Membres", bot, message, __filename)
+            if(!args[0]) return UserError("Veuillez préciser l'utilisateur", bot, message, __filename)
+            if(!args[1]) return UserError("Veuillez préciser une durée (ex: 1h, 3j, 2w, def)", bot, message, __filename)
             const MuteUser = message.mentions.users.first();
 
             let durationDisplay = args[1]
             let duration = ms(args[1])
             if(durationDisplay=="def" || durationDisplay=="perm") duration = "def"
-            if(!duration) return message.lineReply(`Erreur: Veuillez préciser une durée valide`)
+            if(!duration) return UserError("Veuillez préciser une durée valide", bot, message, __filename)
 
             const reason = args.slice(2).join(" ");
-            if(!reason) return message.lineReply(`Erreur: Veuillez préciser une raison`)
+            if(!reason) return UserError("Veuillez préciser une raison", bot, message, __filename)
 
 
             function GiveMuteRole() {
@@ -106,7 +109,11 @@ module.exports = {
 
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

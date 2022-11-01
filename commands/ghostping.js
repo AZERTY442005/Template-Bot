@@ -1,20 +1,27 @@
 const fs = require("fs")
 const fetch = require('node-fetch');
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
+const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'ghostping',
     description: "Envoie un ghostping",
+    aliases: [],
     usage: "ghostping <mention>",
     category: "Utility",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("MANAGE_MESSAGES") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Gérer les Messages)")
-            if(!args[0]) return message.lineReply("Erreur: Veuillez préciser un utilisateur")
+            if(!(message.member.hasPermission("MANAGE_MESSAGES") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Gérer les Messages", bot, message, __filename)
+            if(!args[0]) return UserError("Veuillez préciser la mention", bot, message, __filename)
             message.delete()
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

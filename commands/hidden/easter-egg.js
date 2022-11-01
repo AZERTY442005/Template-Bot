@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 module.exports = {
     name: 'easter-egg',
     description: "GG tu as trouvé l'easter-egg!!!",
+    aliases: [],
     usage: "easter-egg",
     category: "Fun",
     execute(message) {
@@ -14,7 +15,11 @@ module.exports = {
             message.author.send(`GG <@${message.author.id}>, tu as trouvé le premier easter egg\n*PS: évite de partager la commande 😅*\nIndice n°2: (en dev)`)
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

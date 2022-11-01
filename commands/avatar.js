@@ -1,13 +1,15 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require('fs')
 const fetch = require('node-fetch');
+const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'avatar',
     description: "Montre l'avatar d'un utilisateur",
+    aliases: [],
     usage: "avatar (<user>)",
     category: "Utility",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
             let user;
@@ -34,11 +36,15 @@ module.exports = {
             
             return message.channel.send(embed);
             } catch {
-                return message.channel.send("ERREUR: Mention invalide")
+                return UserError("Mention invalide", bot, message, __filename)
             }
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

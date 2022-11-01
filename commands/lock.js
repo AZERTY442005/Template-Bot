@@ -1,5 +1,7 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require('fs')
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
+const UserError = require("../Functions/UserError.js")
 
 function getRoleIdFromMention(mention) {
     if (!mention) return;
@@ -13,15 +15,16 @@ function getRoleIdFromMention(mention) {
 module.exports = {
     name: 'lock',
     description: "Verrouille un salon",
+    aliases: [],
     usage: "lock <reason> (<role>)",
     category: "Moderation",
-    execute(message, args) {
+    execute(message, args, bot) {
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("MANAGE_CHANNELS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Gérer les salons)")
-            if(!args[0]) return message.lineReply(`Erreur: Veuillez préciser la raison\n*${prefix}lock <reason> (<role>)*`)
+            if(!(message.member.hasPermission("MANAGE_CHANNELS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Gérer les salons", bot, message, __filename)
+            if(!args[0]) return UserError("Veuillez préciser la raison", bot, message, __filename)
             let Embed = new MessageEmbed()
             .setTitle("LOCK CHANNEL")
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
@@ -29,7 +32,7 @@ module.exports = {
             .setTimestamp()
             if(args[1]) {
                 const role = message.guild.roles.cache.find(role => role.name === args[1]) || message.guild.roles.cache.find(role => role.id === getRoleIdFromMention(args[1]))
-                if(!role) return message.lineReply(`Erreur: Role inconnu: \`${args[1]}\``)
+                if(!role) return UserError("Role inconnu", bot, message, __filename)
                 if(message.channel.permissionsFor(role).has("SEND_MESSAGES")) { 
                     message.channel.updateOverwrite(role, { SEND_MESSAGES: false }, `${message.author.tag}: ${args[0]}`)
                     Embed.setDescription(`Ce salon a été verrouillé pour ${role}`)
@@ -53,7 +56,11 @@ module.exports = {
             message.channel.send(Embed)
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

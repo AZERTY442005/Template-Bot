@@ -4,9 +4,10 @@ const fs = require('fs')
 module.exports = {
     name: 'bruh',
     description: "Envoie un GIF aléatoire de bruh",
+    aliases: [],
     usage: "bruh",
     category: "Fun",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
             const bruhlist = [
@@ -26,7 +27,7 @@ module.exports = {
                 "https://tenor.com/view/spit-take-laugh-lmao-gif-9271200",
             ]
             const bruhindex = Math.floor(Math.random() * (bruhlist.length - 1)); 
-            message.lineReply(bruhlist[bruhindex])
+            message.lineReplyNoMention(bruhlist[bruhindex])
             let Embed = new MessageEmbed()
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RANDOM")
@@ -35,7 +36,11 @@ module.exports = {
             // message.channel.send(Embed)
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

@@ -5,9 +5,10 @@ const fetch = require('node-fetch');
 module.exports = {
     name: 'changelog',
     description: "Changelog",
+    aliases: ["cl"],
     usage: "changelog",
     category: "Default",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
             let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
@@ -27,7 +28,11 @@ module.exports = {
 
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

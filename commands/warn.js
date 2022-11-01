@@ -1,20 +1,23 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require("fs");
 const fetch = require('node-fetch');
-const {format: prettyFormat} = require('pretty-format'); // CommonJS
+const {format: prettyFormat} = require('pretty-format')
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
+const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'warn',
     description: "Averti un utilisateur",
+    aliases: [],
     usage: "warn <user> <reason>",
     category: "Moderation",
-    execute(message, args) {
+    execute(message, args, bot) {
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("KICK_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Kick des Membres)")
-            if(!args[0])return message.lineReply(`Erreur: Vous devez préciser la personne\n${prefix}*warn <user> <reason>*`)
+            if(!(message.member.hasPermission("KICK_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Kick des Membres", bot, message, __filename)
+            if(!args[0]) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
 
             // console.log("TEST0")
 
@@ -51,8 +54,8 @@ module.exports = {
 
 
             const ReasonWarn = args.slice(1).join(" ");
-            if(UserWarn==null)return message.lineReply(`Erreur: Vous devez préciser la personne\n*${prefix}warn <user> <reason>*`)
-            if(!args[1])return message.lineReply(`Erreur: Vous devez préciser la raison\n*${prefix}warn <user> <reason>*`)
+            if(UserWarn==null) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
+            if(!args[1]) return UserError("Veuillez préciser la raison", bot, message, __filename)
             let AvatarWarn = UserWarn.displayAvatarURL()
             //let ChannelWarn = message.guild.channels.cache.find(channel => channel.name === "warns")
             let EmbedWarn = new MessageEmbed()
@@ -82,7 +85,11 @@ module.exports = {
             // console.log("TEST3")
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

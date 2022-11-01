@@ -1,19 +1,21 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require('fs')
 const fetch = require('node-fetch');
+const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'report',
     description: "Me fait écrire pong",
+    aliases: [],
     usage: "report <user> <reason>",
     category: "Moderation",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
             let UserReport = message.mentions.users.first()||null
             const ReasonReport = args.slice(1).join(" ");
-            if(UserReport==null)return message.lineReply("Erreur: Vous devez préciser la personne\n*report <user> <reason>*")
-            if(!args[1])return message.lineReply("Erreur: Vous devez préciser la raison\n*report <user> <reason>*")
+            if(UserReport==null) return UserError("Veuillez préciser l'utilisateur", bot, message, __filename)
+            if(!args[1]) return UserError("Veuille préciser une raison", bot, message, __filename)
             message.delete()
             let AvatarReport = UserReport.displayAvatarURL()
             let ChannelReport = message.guild.channels.cache.find(channel => channel.name === "reports")
@@ -41,7 +43,11 @@ module.exports = {
             }
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

@@ -5,9 +5,10 @@ const fetch = require('node-fetch');
 module.exports = {
     name: 'prefix',
     description: "Affiche le préfix",
+    aliases: [],
     usage: "prefix",
     category: "Default",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
             try {
@@ -21,12 +22,16 @@ module.exports = {
                 .setTimestamp()
                 message.channel.send(Embed)
             } catch {
-                message.lineReply("Erreur: Aucun préfix customisé...")
-                message.lineReply("Préfix customisé créé avec succès")
+                message.lineReplyNoMention("Erreur: Aucun préfix customisé...")
+                message.lineReplyNoMention("Préfix customisé créé avec succès")
             }
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

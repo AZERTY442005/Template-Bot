@@ -1,20 +1,22 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require('fs');
-// const { url } = require("inspector");
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
+const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'pub',
     description: "Envoie une publicité",
+    aliases: [],
     usage: "pub <title> <message>",
     category: "Utility",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
             let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
             const prefix = prefixes[message.guild.id].prefixes;
-            if(!message.member.hasPermission("MANAGE_MESSAGES")) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Gérer les Messages)")
-            if(!args[0]) return message.lineReply(`Erreur: Vous devez spécifier le titre\n*${prefix}pub <title> <message>*`)
-            if(!args[1]) return message.lineReply(`Erreur: Vous devez spécifier le message\n*${prefix}pub <title> <message>*`)
+            if(!(message.member.hasPermission("MANAGE_MESSAGES") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Gérer les Messages", bot, message, __filename)
+            if(!args[0]) return UserError("Veuillez spécifier un titre", bot, message, __filename)
+            if(!args[1]) return UserError("Veuillez spécifier un message", bot, message, __filename)
             let title = args[0]
             let description = args.slice(1).join(" ");
 
@@ -28,7 +30,11 @@ module.exports = {
             message.delete()
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

@@ -1,54 +1,37 @@
-const { MessageEmbed } = require("discord.js");
-const fs = require("fs")
-const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
-const Error = require("../Functions/Error.js")
-const UserError = require("../Functions/UserError.js")
+const fs = require('fs')
+const fetch = require('node-fetch');
+const UserError = require("../../Functions/UserError.js")
 
 module.exports = {
-    name: 'kick',
-    description: "Kick un utilisateur",
+    name: 'addbot',
+    description: "Ajoute un bot sur AzerDev",
     aliases: [],
-    usage: "kick <user> <reason>",
-    category: "Moderation",
+    usage: "addbot <bot-mention> <channel-id>",
+    category: "Custom",
     execute(message, args, bot) {
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("KICK_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Kick des Membres", bot, message, __filename)
-            if(!args[0]) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
-            const userKick = message.mentions.users.first();
-            if(!userKick) return UserError("Veuillez préciser un utilisateur valide", bot, message, __filename)
-            const member = message.guild.member(userKick);
-            let reasonKick = args.slice(1).join(" ");
-            // if(!reasonKick) reasonKick = 'Non spécifié';
-            if(!reasonKick) return UserError("Veuillez préciser une raison", bot, message, __filename)
-            if(!member) return UserError("Veuillez préciser un utilisateur valide", bot, message, __filename)
-            // message.author.send("pjmqldg")
-            // userKick.send("iosqhd") //ERROR
-            member.kick(`${message.author.tag}: ${reasonKick}`).then(() =>{
-                let AvatarKick = userKick.displayAvatarURL()
-                let EmbedKick = new MessageEmbed()
-                    .setTitle(`KICK`)
-                    .setDescription(`Un utilisateur à été kick du serveur`)
-                    .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                    .setColor("ORANGE")
-                    .setThumbnail(AvatarKick)
-                    .addFields(
-                        {name:"Modérateur",value:`${message.author}`,inline:true},
-                        {name:"Membre",value:`${userKick}`,inline:true},
-                        {name:"Raison",value:`${reasonKick}`,inline:true},
-                    )
-                    .setTimestamp()
-                message.channel.send(EmbedKick)
-                message.delete()
-            }).catch(error => {
-                if(error=="DiscordAPIError: Missing Permissions") {
-                    Error("Je n'ai pas les permissions suffisantes pour kick cet utilisateur", bot, message, __filename)
-                } else {
-                    Error("Impossible de kick cet utilisateur", bot, message, __filename)
-                }
-            })
+            if(message.guild.id!="804461788367683595") return
+            return message.lineReply(`Commande désactivée (en développement)`)
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
+            if(!args[0]) return UserError("Veuillez préciser la mention du bot", bot, message, __filename)
+            const AddBot = message.mentions.users.first()
+            if(!AddBot) return UserError("Veuillez mentionner un bot", bot, message, __filename)
+            if(!AddBot.bot) return UserError("Veuillez préciser uniquement un bot", bot, message, __filename)
+            if(!args[1]) return UserError("Veuillez préciser l'ID du salon", bot, message, __filename)
+            const BotChannel = message.guild.channels.cache.find(channel => channel.id === args[1])
+            if(!BotChannel) return UserError("Veuillez préciser un ID de salon valide", bot, message, __filename)
+
+            console.log(AddBot)
+            console.log(BotChannel)
+
+            let CheckRole = message.guild.roles.cache.find(role => role.name === BotChannel.name);
+            if(!CheckRole) message.guild.roles.create({name:BotChannel.name, mentionable: false, permissions:[]});
+            let myRole = message.guild.roles.cache.find(role => role.name === BotChannel.name);
+            AddBot.addRole(myRole);
+            
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()

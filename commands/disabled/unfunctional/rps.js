@@ -7,6 +7,7 @@ module.exports = {
     name: "rps",
     category: "fun",
     description: "Rock Paper Scissors game. React to one of the emojis to play the game.",
+    aliases: [],
     usage: "rps",
     run: async (client, message, args) => {
         const embed = new RichEmbed()

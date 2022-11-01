@@ -3,6 +3,7 @@ const fs = require('fs')
 module.exports = {
     name: 'hey',
     description: "Te répond hey!!!",
+    aliases: [],
     usage: "hey",
     category: "Default",
     execute(message, prefix, token, bot) {
@@ -15,7 +16,11 @@ module.exports = {
             // console.log("HEY TOKEN: '"+token+"'")
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

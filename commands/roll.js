@@ -1,13 +1,15 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require("fs")
 const fetch = require('node-fetch');
+const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'roll',
     description: "Choisit un nombre aléatoire entre 1 et 6",
+    aliases: [],
     usage: "roll (<nb>)",
     category: "Fun",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
             let number
@@ -16,7 +18,7 @@ module.exports = {
                 number = Math.floor(Math.random() * 6 + 1)
                 faces = 6
             } else {
-                if(!parseInt(args[0])) return message.lineReply(`Erreur: Nombre invalide\n*${prefix}roll (<number>)*`)
+                if(!parseInt(args[0])) return UserError("Nombre invalide", bot, message, __filename)
                 number = Math.floor(Math.random() * parseInt(args[0]) + 1)
                 faces = args[0]
             }
@@ -30,7 +32,11 @@ module.exports = {
             message.channel.send(EmbedRoll)
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

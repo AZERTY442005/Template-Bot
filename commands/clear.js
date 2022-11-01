@@ -1,15 +1,19 @@
 const fs = require("fs")
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
+const Error = require("../Functions/Error.js")
+const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'clear',
     description: "Supprime des messages",
+    aliases: ["clean"],
     usage: "clear <nb>",
     category: "Moderation",
-    execute(message, args) {
+    execute(message, args, bot) {
       let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
       try {
-        if(!(message.member.hasPermission("MANAGE_MESSAGES") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Gérer les Messages)")
-        if(Number(args[0]) <= 0 || isNaN(args[0])) return message.lineReply("Erreur: Veuillez préciser un nombre supérieur à 0")
+        if(!(message.member.hasPermission("MANAGE_MESSAGES") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Gérer les Messages", bot, message, __filename)
+        if(Number(args[0]) <= 0 || isNaN(args[0])) return UserError("Veuillez préciser un nombre supérieur à 0", bot, message, __filename)
         const amount = Number(args[0]) > 100
             ? 101
             : Number(args[0]) + 1;
@@ -23,11 +27,15 @@ module.exports = {
                 }, 2500);
               });
           }).catch(error => {
-            message.lineReply(`Erreur: Impossible de supprimer ce nombre de message`)
+            Error("Impossible de supprimer ce nombre de message", bot, message, __filename)
           })
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

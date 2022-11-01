@@ -1,10 +1,12 @@
 const {format: prettyFormat} = require('pretty-format');
 const fs = require('fs')
 const fetch = require('node-fetch');
+const Error = require("../Functions/Error.js")
 
 module.exports = {
     name: 'love',
     description: "Fait rencontrer 2 membres",
+    aliases: [],
     usage: "love",
     category: "Fun",
     execute(message, args, bot) {
@@ -17,7 +19,7 @@ module.exports = {
                 if(!member.user.bot) MembersList.push(member.user)
             });
             // console.log(prettyFormat(MembersList))
-            if(MembersList.length==1) return message.lineReply("Erreur: Vous êtes seul 😓")
+            if(MembersList.length==1) return Error("Vous êtes seul 😓", bot, message, __filename)
             // console.log("RANDOM1 "+Math.random())
             // console.log("RANDOM2 "+Math.random())
             // console.log("RANDOM3 "+Math.random())
@@ -33,7 +35,11 @@ module.exports = {
             message.channel.send("<@"+members["member1"].id+"> ❤ <@"+members["member2"].id+">")
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

@@ -1,4 +1,5 @@
 {
+    "1.1.4": "Improved Error messages. Added Command Aliases. Better Error Preventer message. Improved Ping command. Badwords command soon !! Feeback and Support commands soon !! Multi-languages soon !!",
     "1.1.3": "Fixing Ban & kick issues. Improved Error Preventer, Improved help page",
     "1.1.2": "Added Mute & Unmute commands.\nReactionRole, Polls and Block-link soon !!",
     "1.1.1": "Fixing permissions issues",

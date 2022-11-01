@@ -1,18 +1,22 @@
 const { MessageEmbed } = require("discord.js")
 const fs = require("fs");
 const fetch = require('node-fetch');
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
+const UserError = require("../Functions/UserError.js")
+const CustomUserError = require("../Functions/CustomUserError.js")
 // const { relativeTimeRounding } = require("moment");
 
 module.exports = {
 //    name: `${prefix}s`,
     name: "s",
     description: "Settings",
+    aliases: [],
     usage: "s help",
     category: "Default",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur")
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Administrateur", bot, message, __filename)
             let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
             const prefix = prefixes[message.guild.id].prefixes;
             // EMPTY ARG 0
@@ -122,7 +126,7 @@ module.exports = {
             }
             // PREFIX
             if(args[0] == "prefix") {
-                if(!args[1]) return message.lineReply(`Erreur: Veuillez préciser un préfix\n*${prefix}s prefix <new-prefix>*`)
+                if(!args[1]) return CustomUserError("Veuillez préciser un préfix", "s prefix <new-prefix>",  bot, message, __filename)
                 let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"))
                 prefixes[message.guild.id] = {
                     prefixes: args[1]
@@ -155,7 +159,7 @@ module.exports = {
                 // SET-STATUS
                 if(args[1] == "on" || args[1] == "off") {
                     let join_message_channel_id = JSON.parse(fs.readFileSync("./DataBase/join-message-channel-id.json", "utf8"))
-                    if(!join_message_channel_id[message.guild.id]) return message.lineReply(`Erreur: Vous devez d'abord définir le salon\n*${prefix}s join-message set-channel <channel-id>*`)
+                    if(!join_message_channel_id[message.guild.id]) return CustomUserError("Vous devez d'abord définir le salon", "s join-message set-channel <channel-id>", bot, message, __filename)
 
                     let join_message_status = JSON.parse(fs.readFileSync("./DataBase/join-message-status.json", "utf8"))
                     join_message_status[message.guild.id] = {
@@ -216,7 +220,7 @@ module.exports = {
                 // SET-STATUS
                 if(args[1] == "on" || args[1] == "off") {
                     let leave_message_channel_id = JSON.parse(fs.readFileSync("./DataBase/leave-message-channel-id.json", "utf8"))
-                    if(!leave_message_channel_id[message.guild.id]) return message.lineReply(`Erreur: Vous devez d'abord définir le salon\n*${prefix}s leave-message set-channel <channel-id>*`)
+                    if(!leave_message_channel_id[message.guild.id]) return CustomUserError("Vous devez d'abord définir le salon", "s leave-message set-channel <channel-id>", bot, message, __filename)
 
                     let leave_message_status = JSON.parse(fs.readFileSync("./DataBase/leave-message-status.json", "utf8"))
                     leave_message_status[message.guild.id] = {
@@ -262,7 +266,7 @@ module.exports = {
             
             // AUTO REACT
             if(args[0] == "auto-react") {
-                if (args[1]!="on" && args[1]!="off") return message.lineReply("Erreur: Vous devez définir ceci sur on/off");
+                if (args[1]!="on" && args[1]!="off") return UserError("Vous devez définir ceci sur ON/OFF", bot, message, __filename)
                 let auto_react = JSON.parse(fs.readFileSync("./DataBase/auto-react.json", "utf8"))
 
                 auto_react[message.guild.id] = {
@@ -282,10 +286,14 @@ module.exports = {
                 return
             }
             // UNKNOW ARG 0
-            message.lineReply(`Erreur: Argument inconnu : ${args[0]}\n*${prefix}s help*`)
+            UserError(`Argument inconnu : ${args[0]}`, bot, message, __filename)
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

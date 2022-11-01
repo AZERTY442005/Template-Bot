@@ -2,16 +2,18 @@ const { MessageEmbed } = require("discord.js")
 const moment = require('moment');
 const fs = require('fs')
 const fetch = require('node-fetch');
+const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'userinfo',
     description: "affiche les infos d'un utilisateur",
+    aliases: [],
     usage: "userinfo <user>",
     category: "Utility",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!message.mentions.users.first()) return message.lineReply("Erreur: Veuillez préciser un utilisateur\n*userinfo <user>*")
+            if(!message.mentions.users.first()) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
             const flags = {
                 DISCORD_EMPLOYEE: 'Discord Employee',
                 DISCORD_PARTNER: 'Discord Partner',
@@ -60,7 +62,11 @@ module.exports = {
             message.channel.send(embed);
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

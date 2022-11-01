@@ -1,18 +1,21 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require("fs")
 const fetch = require('node-fetch');
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
+const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'warns',
     description: "Permet de voir les informations des avertissements d'un utilisateur",
+    aliases: [],
     usage: "warns help",
     category: "Moderation",
-    execute(message, args) {
+    execute(message, args, bot) {
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("KICK_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Kick des Membres)")
+            if(!(message.member.hasPermission("KICK_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Kick des Membres", bot, message, __filename)
             
             let warns = JSON.parse(fs.readFileSync("./DataBase/warns.json", "utf8"));
 
@@ -49,7 +52,7 @@ module.exports = {
             
             let User = message.mentions.users.first()||null
 
-            if(!User) return message.lineReply(`Erreur: Veuillez préciser un utilisateur valide\n*${prefix}warns help*`)
+            if(!User) UserError("Veuillez préciser un utilisateur valide", bot, message, __filename)
 
             if(!warns[message.guild.id]) warns[message.guild.id]={};
             if(!warns[message.guild.id][User.id]) {
@@ -94,7 +97,7 @@ module.exports = {
             }
             if(args[1] == "remove") {
                 message.delete()
-                if(!args[2]) return message.lineReply("Erreur: Veuillez préciser un nombre\n*${prefix}warns help*")
+                if(!args[2]) return UserError("Veuillez préciser un nombre", bot, message, __filename)
                 const oldwarns = warns[message.guild.id][User.id].warns
                 warns[message.guild.id][User.id] = {
                     warns: UserWarns - parseInt(args[2]),
@@ -114,7 +117,7 @@ module.exports = {
             }
             if(args[1] == "add") {
                 message.delete()
-                if(!args[2]) return message.lineReply("Erreur: Veuillez préciser un nombre\n*${prefix}warns help*")
+                if(!args[2]) return UserError("Veuillez préciser un nombre", bot, message, __filename)
                 const oldwarns = warns[message.guild.id][User.id].warns
                 warns[message.guild.id][User.id] = {
                     warns: UserWarns + parseInt(args[2]),
@@ -134,7 +137,11 @@ module.exports = {
             }
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

@@ -1,13 +1,18 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require("fs");
 const fetch = require('node-fetch');
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
+const Error = require("../Functions/Error.js")
+const UserError = require("../Functions/UserError.js")
+const Success = require("../Functions/Success.js");
 
 module.exports = {
     name: 'rules',
     description: "Créer un règlement sur le serveur",
+    aliases: [],
     usage: "rules help",
     category: "Utility",
-    execute(message, args) {
+    execute(message, args, bot) {
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
@@ -28,7 +33,7 @@ module.exports = {
                 return
             }
             if(!args[0] || (usermention && !args[1])) { // SEND RULES MP
-                if(!rules[message.guild.id]) return message.lineReply(`Erreur: Le règlement est vide`)
+                if(!rules[message.guild.id]) return Error("Le règlement est vide", bot, message, __filename)
                 let EmbedSend = new MessageEmbed()
                 .setTitle(`Règlement`)
                 .setDescription(`${rules[message.guild.id]}`)
@@ -38,15 +43,16 @@ module.exports = {
 
                 if (!args[0]) {
                     message.author.send(EmbedSend)
-                    message.lineReply("Le règlement vous a été envoyé en messages privés")
+                    // message.lineReply("Le règlement vous a été envoyé en messages privés") // SUCCESS
+                    Success("Le règlement vous a été envoyé en messages privés", bot, message, __filename)
                 } else {
-                    if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
+                    if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Administrateur", bot, message, __filename)
                     usermention.send(EmbedSend)
                     message.delete()
                 }
                 return
             }
-            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Administrateur", bot, message, __filename)
             // if(args[0]=="add") { // ADD RULE
             //     let title = args[1]
             //     let description = args.slice(2).join(" ");
@@ -90,7 +96,7 @@ module.exports = {
             //     message.channel.send(EmbedAdd)
             // }
             if(args[0]=="set") { // SET RULES
-                if(!args[1]) return message.lineReply(`Erreur: Veuillez préciser un règlement`)
+                if(!args[1]) return UserError("Veuillez préciser un règlement", bot, message, __filename)
                 newrules = args.slice(1).join(" ");
                 rules[message.guild.id] = newrules
                 fs.writeFile("./DataBase/rules.json", JSON.stringify(rules), (err) => {
@@ -107,7 +113,7 @@ module.exports = {
                 message.channel.send(EmbedSet)
             }
             if(args[0]=="send") { // SEND RULES CHANNEL
-                if(!rules[message.guild.id]) return message.lineReply(`Erreur: Le règlement est vide`)
+                if(!rules[message.guild.id]) return Error("Le règlement est vide", bot, message, __filename)
                 let EmbedSend = new MessageEmbed()
                 .setTitle(`Règlement`)
                 .setDescription(`${rules[message.guild.id]}`)
@@ -118,7 +124,7 @@ module.exports = {
                 message.channel.send(EmbedSend)
             }
             if(args[0]=="delete") { // DELETE RULES
-                if(!rules[message.guild.id]) return message.lineReply(`Erreur: Le règlement est vide`)
+                if(!rules[message.guild.id]) return Error("Le règlement est vide", bot, message, __filename)
                 let EmbedDelete = new MessageEmbed()
                 .setTitle(`RULES DELETED`)
                 .setDescription(`Le règlement du serveur a été supprimé`)
@@ -135,7 +141,11 @@ module.exports = {
             }
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

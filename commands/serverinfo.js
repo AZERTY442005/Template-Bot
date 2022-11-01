@@ -5,6 +5,7 @@ const fetch = require('node-fetch');
 module.exports = {
     name: 'serverinfo',
     description: "Affiche les infos du serveur",
+    aliases: [],
     usage: "serverinfo",
     category: "Utility",
     execute(message, args, guild) {
@@ -26,7 +27,11 @@ module.exports = {
             message.channel.send(Embed)
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

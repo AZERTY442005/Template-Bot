@@ -1,20 +1,24 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require("fs")
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
+const Error = require("../Functions/Error.js")
+const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'dm',
     description: "Envoie un DM à un utilisateur",
+    aliases: [],
     usage: "dm <user> <message>",
     category: "Utility",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Administrateur", bot, message, __filename)
             let dmUser = message.mentions.users.first();
-            if(!args[0]) return message.lineReply("Erreur: Veuillez préciser un utilisateur")
-            if(!dmUser) return message.channel.send("Erreur: Veuillez préciser un utilisateur valide")
+            if(!args[0]) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
+            if(!dmUser) return Error("Veuillez préciser un utilisateur valide", bot, message, __filename)
             //if(dmUser.id == "782885398316711966") return message.channel.send("ERREUR: Veuillez préciser un utilisateur valide (pas moi de préférence)")
-            if(!args[1]) return message.lineReply("Erreur: Veuillez préciser un message")
+            if(!args[1]) return UserError("Veuillez préciser un message", bot, message, __filename)
             const dmMessage = args.slice(1).join(" ");
             // dmUser.send(`__Message de ${message.author} provenant de **${message.guild.name}**__\n${dmMessage}`)
 
@@ -29,7 +33,11 @@ module.exports = {
             message.delete()
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

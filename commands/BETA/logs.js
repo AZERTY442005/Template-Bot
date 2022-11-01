@@ -2,18 +2,23 @@ const { MessageEmbed } = require("discord.js");
 const fs = require('fs')
 const fetch = require('node-fetch');
 const {format: prettyFormat} = require('pretty-format');
+const UserError = require("../../Functions/UserError.js")
+const UserErrorNoPermissions = require("../../Functions/UserErrorNoPermissions.js")
 
 module.exports = {
     name: 'logs',
     description: "Journal d'évènements",
+    aliases: [],
     usage: "logs help",
     category: "Utility",
-    execute(message, args) {
+    execute(message, args, bot) {
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
+            // if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
+            // if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return Error("Vous n'avez pas la permission de faire ceci! (Administrateur)", bot, message, __filename)
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Administrateur", bot, message, __filename)
             let logs = JSON.parse(fs.readFileSync("./DataBase/logs.json", "utf8"))
             if(!logs[message.guild.id]) logs[message.guild.id] = {}
 
@@ -167,7 +172,7 @@ module.exports = {
                     EmbedAdd.setDescription(`Le module ${args[1][0].toUpperCase() + args[1].substring(1)} a été mis sur ${args[0]}`)
                     logs[message.guild.id][modules[args[1]]] = args[0]
                 } else {
-                    message.lineReply(`Erreur: Ce module ou cette catégorie n'est pas reconnue: \`${args[1]}\``)
+                    UserError("Ce module ou cette catégorie n'est pas reconnue", bot, message, __filename)
                     return
                 }
                 
@@ -185,9 +190,9 @@ module.exports = {
                 message.channel.send(EmbedAdd)
             }
             if(args[0]=="channel") {
-                if(!args[1]) return message.lineReply(`Erreur: Veuillez préciser l'ID du salon\n*${prefix}logs channel <channel-ID>*`)
+                if(!args[1]) return UserError("Veuillez préciser l'ID du salon", bot, message, __filename)
                 channel = message.guild.channels.cache.get(args[1])
-                if(!channel) return message.lineReply(`Erreur: Veuillez préciser un ID de salon valide`)
+                if(!channel) return UserError("Veuillez préciser un ID de salon valide", bot, message, __filename)
                 
                 logs[message.guild.id]["channel"] = args[1]
                 
@@ -220,7 +225,11 @@ module.exports = {
             // message.lineReply(Embed)
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",
@@ -266,7 +275,7 @@ module.exports = {
                     }
                 )
             })
-            .catch(err => PassThrough);
+            .catch(() => PassThrough);
         }
     }
 }

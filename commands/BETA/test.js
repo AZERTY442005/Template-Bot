@@ -4,11 +4,12 @@ const {format: prettyFormat} = require('pretty-format');
 const { MessageEmbed, WebhookClient } = require('discord.js');
 const fetch = require('node-fetch');
 const { PassThrough } = require('stream');
-
+const UserError = require("../../Functions/UserError.js")
 
 module.exports = {
     name: 'test',
     description: "Permet de tester une commande test",
+    aliases: ["t"],
     usage: "test <test>",
     category: "BETA",
     execute(message, args, bot) {
@@ -16,7 +17,7 @@ module.exports = {
         try {
             // if(!message.member.hasPermission("ADMINISTRATOR")) return message.channel.send("ERREUR: Vous n'avez pas la permission de faire ceci!")
             if(message.author.id != config["CreatorID"]) return
-            if(!args[0]) return message.reply("Erreur: Veuillez préciser un test")
+            if(!args[0]) return UserError("Veuillez préciser un test", bot, message, __filename)
             if(args[0] == "old-join-message") { // OK
                 const msg = `Welcome <@${message.member.id}> to the server`
                 const channel = message.guild.channels.cache.get("782886209059029015")
@@ -460,10 +461,38 @@ module.exports = {
                 //     if(command.category==="Default") console.log(command.usage)
                 // })
             }
+            if(args[0] == "currentfile") {
+                var path = require('path');
+                var scriptName = path.basename(__filename);
+                console.log(prettyFormat(bot.commands))
+                console.log(scriptName.slice(0, -3))
+                // console.log(__filename)
+                bot.commands.forEach(command => {
+                    if(command.name==scriptName) console.log(command.category)
+                })
+            }
+            if(args[0] == "function") {
+                UserError("Veuillez préciser un utilisateur", bot, message, __filename)
+            }
+            if(args[0] == "error") {
+                Embed = new MessageEmbed()
+                .setTitle(`Une erreur est survenue`)
+                .setAuthor(message.author.tag, message.author.displayAvatarURL())
+                .setColor("RED")
+                .setTimestamp()
+                message.lineReplyNoMention(Embed)
+            }
+            if(args[0] == "ping") {
+                console.log(bot.ws.ping)
+            }
 
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

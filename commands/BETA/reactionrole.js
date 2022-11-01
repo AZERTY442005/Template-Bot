@@ -1,10 +1,13 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require('fs')
 const fetch = require('node-fetch');
+const UserError = require("../../Functions/UserError.js")
+const UserErrorNoPermissions = require("../../Functions/UserErrorNoPermissions.js")
 
 module.exports = {
     name: 'reactionrole',
     description: "Reactionrole",
+    aliases: [],
     usage: "reactionrole <role> <reaction> <message>",
     category: "Utility",
     execute(message, args, bot) {
@@ -12,12 +15,12 @@ module.exports = {
         try {
             let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
             const prefix = prefixes[message.guild.id].prefixes;
-            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
-            if(!args[0]) return message.lineReply(`Erreur: Veuillez préciser le rôle\n*${prefix}reactionrole <role> <reaction> <message>*`)
-            if(!args[1]) return message.lineReply(`Erreur: Veuillez préciser la réaction\n*${prefix}reactionrole <role> <reaction> <message>*`)
-            if(!args[2]) return message.lineReply(`Erreur: Veuillez préciser le message\n*${prefix}reactionrole <role> <reaction> <message>*`)
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Administrateur", bot, message, __filename)
+            if(!args[0]) return UserError("Veuillez préciser le rôle", bot, message, __filename)
+            if(!args[1]) return UserError("Veuillez préciser la réaction", bot, message, __filename)
+            if(!args[2]) return UserError("Veuillez préciser le message", bot, message, __filename)
             
-            if(!message.mentions.roles.first()) return message.lineReply(`Erreur: Veuillez préciser un rôle valide`)
+            if(!message.mentions.roles.first()) UserError("Veuillez préciser un rôle valide", bot, message, __filename)
             const Role = message.mentions.roles.first()
 
             const Emoji = args[1]
@@ -31,7 +34,7 @@ module.exports = {
             message.channel.send(Embed).then(msg => {
                 msg.react(Emoji).catch(err => {
                     msg.delete()
-                    if(err=="DiscordAPIError: Unknown Emoji") return message.lineReply(`Erreur: Veuillez préciser un émoji valide`)
+                    if(err=="DiscordAPIError: Unknown Emoji") return UserError("Veuillez préciser un émoji valide", bot, message, __filename)
                 })
                 // const Filter = (reaction, user) => user.id == message.author.id;
                 // msg.awaitReactions(Filter, {max: 1, time: 30000, errors: ["time"]}).then(collected => {
@@ -86,7 +89,11 @@ module.exports = {
             
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

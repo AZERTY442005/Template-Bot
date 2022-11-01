@@ -4,9 +4,10 @@ const fs = require("fs")
 module.exports = {
     name: 'credits',
     description: "Affiche mes credits",
+    aliases: ["version", "bot", "info", "botinfo", "ver"],
     usage: "credits",
     category: "Default",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
             let avatar = config["BotInfo"]["IconURL"]
@@ -26,7 +27,11 @@ module.exports = {
             message.channel.send(EmbedCredits)
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

@@ -1,29 +1,33 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require('fs')
 const fetch = require('node-fetch');
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
+const Error = require("../Functions/Error.js")
+const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'unmute',
     description: "Unmute un membre",
+    aliases: [],
     usage: "unmute <user> (<reason>)",
     category: "Moderation",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
             let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
             const prefix = prefixes[message.guild.id].prefixes;
-            if(!message.member.hasPermission("KICK_MEMBERS") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="off") return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Kick des Membres)")
-            if(!args[0]) return message.lineReply(`Erreur: Veuillez préciser un utilisateur\n*${prefix}unmute <user> (<reason>)*`)
+            if(!message.member.hasPermission("KICK_MEMBERS") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="off") return UserErrorNoPermissions("Kick des Membres", bot, message, __filename)
+            if(!args[0]) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
 
             const User = message.mentions.users.first();
-            if(!User) return message.lineReply(`Erreur: Veuillez préciser un utilisateur valide\n*${prefix}unmute <user> (<reason>)*`)
+            if(!User) return UserError("Veuillez préciser un utilisateur valide", bot, message, __filename)
 
             let reason = args.slice(1).join(" ");
             if(!reason) reason = 'Non spécifié';
             
             function RemoveMuteRole() {
                 let MuteRole = message.guild.roles.cache.find(role => role.name === "Muted");
-                if(!message.guild.member(User).roles.cache.some(role => role.name === "Muted")) return message.lineReply(`Erreur: Ce membre n'est pas Mute`)
+                if(!message.guild.member(User).roles.cache.some(role => role.name === "Muted")) return Error("Ce membre n'est pas Mute", bot, message, __filename)
                 message.guild.member(User).roles.remove(MuteRole, `${message.author.tag}: ${reason}`).catch(console.error);
 
 
@@ -79,7 +83,11 @@ module.exports = {
             } else RemoveMuteRole()
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

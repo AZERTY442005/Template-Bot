@@ -1,17 +1,30 @@
+const { MessageEmbed } = require("discord.js");
 const fs = require('fs')
 
 module.exports = {
     name: 'invite',
     description: "Envoie le lien d'invitation du bot",
+    aliases: [],
     usage: "invite",
     category: "Default",
-    execute(message) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            message.lineReply(`Voici mon lien d'invitation\nhttps://discord.com/api/oauth2/authorize?client_id=${config["BotInfo"]["ID"]}&permissions=8&scope=bot"`)
+            const Embed = new MessageEmbed()
+            .setTitle(`INVITE`)
+            .setDescription(`Voici mon lien d'invitation\nhttps://discord.com/api/oauth2/authorize?client_id=${config["BotInfo"]["ID"]}&permissions=8&scope=bot"`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setThumbnail(config["BotInfo"]["IconURL"])
+            .setColor("AQUA")
+            .setTimestamp()
+            message.lineReplyNoMention(Embed)
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

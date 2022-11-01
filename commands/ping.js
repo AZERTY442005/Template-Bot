@@ -1,21 +1,34 @@
+const { MessageEmbed } = require("discord.js")
 const fs = require('fs')
 const fetch = require('node-fetch');
 
 module.exports = {
     name: 'ping',
     description: "Calcule le ping du Bot",
+    aliases: [],
     usage: "ping",
     category: "Default",
-    execute(message) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            message.channel.send("Calculating ping...").then((resultMessage) => {
-                const ping = resultMessage.createdTimestamp - message.createdTimestamp
-                message.lineReply(`Pong !!! **${ping}ms**`)
-            })
+            // message.channel.send("Calculating ping...").then((resultMessage) => {
+            //     const ping = resultMessage.createdTimestamp - message.createdTimestamp
+            //     message.lineReplyNoMention(`Pong !!! **${ping}ms**`)
+            // })
+            const Embed = new MessageEmbed()
+            .setTitle(`PING`)
+            .setDescription(`${bot.ws.ping} ms`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("GREEN")
+            .setTimestamp()
+            message.lineReplyNoMention(Embed)
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",

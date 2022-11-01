@@ -1,5 +1,12 @@
 {
     "git.ignoreLimitWarning": true,
     "editor.cursorBlinking": "phase",
-    "editor.cursorSmoothCaretAnimation": true
+    "editor.cursorSmoothCaretAnimation": true,
+
+    "editor.codeActionsOnSave": {
+        "source.fixAll": true,
+        "source.organizeImports": true,
+        "source.sortMembers": true
+    },
+    "editor.formatOnSave": true
 }

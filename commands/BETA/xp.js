@@ -2,13 +2,17 @@ const { MessageEmbed } = require("discord.js");
 const fs = require("fs")
 const fetch = require('node-fetch');
 const {format: prettyFormat} = require('pretty-format');
+const UserError = require("../../Functions/UserError.js")
+const Error = require("../../Functions/Error.js")
+const UserErrorNoPermissions = require("../../Functions/UserErrorNoPermissions.js")
 
 module.exports = {
     name: 'xp',
     description: "Gère le Système d'XP du serveur",
+    aliases: [],
     usage: "xp help",
     category: "Utility",
-    execute(message, args) {
+    execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
             let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
@@ -56,7 +60,7 @@ module.exports = {
             }
 
             if(!args[0]) { // SEE OWN XP
-                if(xp_system["status"][message.guild.id]=="off") return message.lineReply(`Le système d'XP est désactivé sur ce serveur`)
+                if(xp_system["status"][message.guild.id]=="off") return Error("Le système d'XP est désactivé sur ce serveur", bot, message, __filename)
                 let EmbedXP = new MessageEmbed()
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
                 .setColor("AQUA")
@@ -69,7 +73,7 @@ module.exports = {
             }
             let usermention = message.mentions.users.first();
             if(usermention && !args[1]) { // SEE OTHERS XP
-                if(xp_system["status"][message.guild.id]=="off") return message.lineReply(`Le système d'XP est désactivé sur ce serveur`)
+                if(xp_system["status"][message.guild.id]=="off") return Error("Le système d'XP est désactivé sur ce serveur", bot, message, __filename)
                 if(!xp_system["messages"][message.guild.id][usermention.id]) {
                     xp_system["messages"][message.guild.id][usermention.id] = 0
                     fs.writeFile("./DataBase/xp-system.json", JSON.stringify(xp_system, null, 4), (err) => {
@@ -106,9 +110,9 @@ module.exports = {
                 message.channel.send(EmbedHelp)
                 return
             }
-            if(!message.member.hasPermission("ADMINISTRATOR")) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Administrateur", bot, message, __filename)
             if(args[0] == "on" || args[0] == "off") { // CHANGE XP STATE
-                if(xp_system["status"][message.guild.id]==args[0]) return message.lineReply(`Erreur: Le système d'XP est déjà sur **${args[0]}**`)
+                if(xp_system["status"][message.guild.id]==args[0]) return Error(`Le système d'XP est déjà sur ${args[0].toUpperCase()}`, bot, message, __filename)
                 xp_system["status"][message.guild.id] = args[0]
                 fs.writeFile("./DataBase/xp-system.json", JSON.stringify(xp_system, null, 4), (err) => {
                     if (err) console.error();
@@ -119,6 +123,7 @@ module.exports = {
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
                 .setColor("AQUA")
                 .setTimestamp()
+                message.delete()
                 message.channel.send(EmbedStatus)
             }
             if(args[0] == "reset-all") { // RESET ALL XPS
@@ -140,9 +145,9 @@ module.exports = {
                 return
             }
             if(args[0] == "set") { // CHANGE XP OF A USER
-                if(!usermention) return message.lineReply(`Erreur: Veuillez préciser un utilisateur\n*${prefix}xp set <user> <level/messages> <nombre>*`)
+                if(!usermention) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
                 if(args[2] == "level") {
-                    if(!args[3]) return message.lineReply(`Erreur: Veuillez préciser un nombre\n*${prefix}xp set <user> level <nombre>*`)
+                    if(!args[3]) return UserError("Veuillez préciser un nombre", bot, message, __filename)
                     const usermention = message.mentions.users.first();
                     xp_system["levels"][message.guild.id][usermention.id] = parseInt(args[3])
                     fs.writeFile("./DataBase/xp-system.json", JSON.stringify(xp_system, null, 4), (err) => {
@@ -151,7 +156,7 @@ module.exports = {
                     return
                 }
                 if(args[2] == "messages") {
-                    if(!args[3]) return message.lineReply(`Erreur: Veuillez préciser un nombre\n*${prefix}xp set <user> messages <nombre>*`)
+                    if(!args[3]) return UserError("Veuillez préciser un nombre", bot, message, __filename)
                     const usermention = message.mentions.users.first();
                     xp_system["messages"][message.guild.id][usermention.id] = parseInt(args[3])
                     fs.writeFile("./DataBase/xp-system.json", JSON.stringify(xp_system, null, 4), (err) => {
@@ -159,10 +164,10 @@ module.exports = {
                     });
                     return
                 }
-                message.lineReply(`Erreur: Veuillez préciser une variable\n*${prefix}xp set <user> level <nombre>*`)
+                UserError("Veuillez préciser une variable", bot, message, __filename)
             }
             if(args[0] == "reset") { // RESET XP OF A USER
-                if(!usermention) return message.lineReply(`Erreur: Veuillez préciser un utilisateur\n*${prefix}xp reset <user>*`)
+                if(!usermention) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
                 xp_system["messages"][message.guild.id][usermention.id] = 0
                 xp_system["levels"][message.guild.id][usermention.id] = 0
                 fs.writeFile("./DataBase/xp-system.json", JSON.stringify(xp_system, null, 4), (err) => {
@@ -178,7 +183,11 @@ module.exports = {
             }
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
-            message.lineReply(`Une erreur est survenue`)
+            Embed = new MessageEmbed()
+            .setTitle(`Une erreur est survenue`)
+            .setAuthor(message.author.tag, message.author.displayAvatarURL())
+            .setColor("RED")
+            message.lineReplyNoMention(Embed)
             var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8")
             fetch(URL, {
                 "method":"POST",
