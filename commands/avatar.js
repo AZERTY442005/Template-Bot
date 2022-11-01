@@ -5,7 +5,7 @@ const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'avatar',
-    description: "Montre l'avatar d'un utilisateur",
+    description: {"fr": "Montre l'avatar d'un utilisateur", "en": "Shows a user's avatar"},
     aliases: [],
     usage: "avatar (<user>)",
     category: "Utility",
@@ -36,12 +36,12 @@ module.exports = {
             
             return message.channel.send(embed);
             } catch {
-                return UserError("Mention invalide", bot, message, __filename)
+                return UserError("InvalidMention", bot, message, __filename)
             }
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

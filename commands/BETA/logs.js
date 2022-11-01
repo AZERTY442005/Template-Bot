@@ -3,22 +3,28 @@ const fs = require('fs')
 const fetch = require('node-fetch');
 const {format: prettyFormat} = require('pretty-format');
 const UserError = require("../../Functions/UserError.js")
+const Error = require("../../Functions/Error.js")
 const UserErrorNoPermissions = require("../../Functions/UserErrorNoPermissions.js")
 
 module.exports = {
     name: 'logs',
-    description: "Journal d'évènements",
+    description: {"fr": "Journal d'évènements", "en": "Event Log"},
     aliases: [],
     usage: "logs help",
     category: "Utility",
     execute(message, args, bot) {
+        let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
-        let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
         try {
             // if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return message.lineReply("Erreur: Vous n'avez pas la permission de faire ceci! (Administrateur)")
             // if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return Error("Vous n'avez pas la permission de faire ceci! (Administrateur)", bot, message, __filename)
-            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Administrateur", bot, message, __filename)
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("ADMINISTRATOR", bot, message, __filename)
             let logs = JSON.parse(fs.readFileSync("./DataBase/logs.json", "utf8"))
             if(!logs[message.guild.id]) logs[message.guild.id] = {}
 
@@ -109,10 +115,10 @@ module.exports = {
                 .setTitle("LOGS COMMANDS")
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
                 .setColor("GOLD")
-                .addField(`${prefix}logs help`, `Affiche cette page`)
-                .addField(`${prefix}logs list`, `Affiche La liste des modules de logs`)
-                .addField(`${prefix}logs channel <channel-id>`, `Paramètre le salon d'envoie des logs`)
-                .addField(`${prefix}logs <on/off> (<module/category>)`, `Active/Désactive un module ou une catégorie de logs`)
+                .addField(`${prefix}logs help`, `${message_language[languages[message.guild.id]]["LogsSyntaxHelp"]}`)
+                .addField(`${prefix}logs list`, `${message_language[languages[message.guild.id]]["LogsSyntaxList"]}`)
+                .addField(`${prefix}logs channel <channel-id>`, `${message_language[languages[message.guild.id]]["LogsSyntaxChannel"]}`)
+                .addField(`${prefix}logs <on/off> (<module/category>)`, `${message_language[languages[message.guild.id]]["LogsSyntaxOnOff"]}`)
                 .setTimestamp()
                 message.channel.send(EmbedHelp)
             }
@@ -152,7 +158,7 @@ module.exports = {
                 if(!args[1]) {
                     console.log("ALL")
                     // TOGGLE ALL MODULES
-                    EmbedAdd.setDescription(`Tous les modules ont été mis sur ${args[0]}`)
+                    EmbedAdd.setDescription(`${message_language[languages[message.guild.id]]["AllModulesUpdated"]} ${args[0]}`)
                     for(let i=0;i<modules.length;i++) {
                         logs[message.guild.id][modules[i]] = args[0]
                     }
@@ -161,7 +167,7 @@ module.exports = {
                     // TOGGLE CATEGORY
                     console.log(prettyFormat(Object.keys(categories)))
                     console.log(categories[args[1]])
-                    EmbedAdd.setDescription(`La catégorie ${args[1][0].toUpperCase() + args[1].substring(1)} a été mis sur ${args[0]}`)
+                    EmbedAdd.setDescription(`${message_language[languages[message.guild.id]]["TheCategory"]} ${args[1][0].toUpperCase() + args[1].substring(1)} ${message_language[languages[message.guild.id]]["WasTurned"]} ${args[0]}`)
                     for(let i=0;i<categories[args[1]].length;i++) {
                         console.log(logs[message.guild.id][categories[args[1]][i]])
                         logs[message.guild.id][categories[args[1]][i]] = args[0]
@@ -169,10 +175,10 @@ module.exports = {
                 } else if (modules.includes(args[1])) {
                     console.log("MODULE")
                     // TOGGLE MODULE
-                    EmbedAdd.setDescription(`Le module ${args[1][0].toUpperCase() + args[1].substring(1)} a été mis sur ${args[0]}`)
+                    EmbedAdd.setDescription(`${message_language[languages[message.guild.id]]["TheModule"]} ${args[1][0].toUpperCase() + args[1].substring(1)} ${message_language[languages[message.guild.id]]["WasTurned"]} ${args[0]}`)
                     logs[message.guild.id][modules[args[1]]] = args[0]
                 } else {
-                    UserError("Ce module ou cette catégorie n'est pas reconnue", bot, message, __filename)
+                    Error("UnknownModuleCategory", bot, message, __filename)
                     return
                 }
                 
@@ -190,9 +196,9 @@ module.exports = {
                 message.channel.send(EmbedAdd)
             }
             if(args[0]=="channel") {
-                if(!args[1]) return UserError("Veuillez préciser l'ID du salon", bot, message, __filename)
+                if(!args[1]) return UserError("SpecifyChannelID", bot, message, __filename)
                 channel = message.guild.channels.cache.get(args[1])
-                if(!channel) return UserError("Veuillez préciser un ID de salon valide", bot, message, __filename)
+                if(!channel) return SpecifyValidChannelIDError("", bot, message, __filename)
                 
                 logs[message.guild.id]["channel"] = args[1]
                 
@@ -200,7 +206,7 @@ module.exports = {
                 .setTitle(`LOGS CHANNEL`)
                 .setColor("GOLD")
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                .addField(`Le salon des logs a été changé`, `<#${args[1]}>`)
+                .addField(`${message_language[languages[message.guild.id]]["LogsChannelUpdated"]}`, `<#${args[1]}>`)
                 .setTimestamp()
                 message.channel.send(EmbedChannel)
             }
@@ -226,7 +232,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

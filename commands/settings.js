@@ -7,49 +7,36 @@ const CustomUserError = require("../Functions/CustomUserError.js")
 // const { relativeTimeRounding } = require("moment");
 
 module.exports = {
-//    name: `${prefix}s`,
-    name: "s",
-    description: "Settings",
-    aliases: [],
-    usage: "s help",
+    name: "settings",
+    description: {"fr": "Paramètres", "en": "Settings"},
+    aliases: ["s", "set", "setting"],
+    usage: "settings help",
     category: "Default",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
+        const prefix = prefixes[message.guild.id].prefixes;
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
         try {
-            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Administrateur", bot, message, __filename)
-            let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
-            const prefix = prefixes[message.guild.id].prefixes;
-            // EMPTY ARG 0
-            if(!args[0]){
-                let Embed = new MessageEmbed()
-                    .setTitle("__SETTINGS COMMANDS LIST__")
-                    .setColor("#CA0000")
-                    .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                    .setTimestamp()
-                    .addField(`${prefix}s help`, "Affiche cette page")
-                    .addField(`${prefix}s info`, "Donne la liste des paramètres et des valeurs")
-                    .addField(`${prefix}s prefix <newprefix>`, "Change le préfix")
-                    .addField(`${prefix}s join-message <action> <value>`, `Configure le join message\n*${prefix}s join-message help*`)
-                    .addField(`${prefix}s leave-message <action> <value>`, `Configure le leave message\n*${prefix}s leave-message help*`)
-                    .addField(`${prefix}s auto-react <on/off>`, "Permet au bot de réagir aux messages contenants des mots-clés")
-                    message.channel.send(Embed)
-                    return
-            }
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("ADMINISTRATOR", bot, message, __filename)
             // HELP
-            if(args[0] == "help"){
+            if(!args[0] || args[0] == "help" || !"helpinfoprefixjoin-messageleave-messageauto-react".includes(args[0])){
                 let Embed = new MessageEmbed()
                     .setTitle("__SETTINGS COMMANDS LIST__")
                     .setColor("#CA0000")
                     .setAuthor(message.author.tag, message.author.displayAvatarURL())
                     .setTimestamp()
-                    .addField(`${prefix}s help`, "Affiche cette page")
-                    .addField(`${prefix}s info`, "Donne la liste des paramètres et des valeurs")
-                    .addField(`${prefix}s prefix <newprefix>`, "Change le préfix")
-                    .addField(`${prefix}s join-message <action> <value>`, `Configure le join message\n*${prefix}s join-message help*`)
-                    .addField(`${prefix}s leave-message <action> <value>`, `Configure le leave message\n*${prefix}s leave-message help*`)
-                    .addField(`${prefix}s auto-react <on/off>`, "Permet au bot de réagir aux messages contenants des mots-clés")
+                    .addField(`${prefix}s help`, `${message_language[languages[message.guild.id]]["sSyntaxHelp"]}`)
+                    .addField(`${prefix}s info`, `${message_language[languages[message.guild.id]]["sSyntaxInfo"]}`)
+                    .addField(`${prefix}s prefix <new-prefix>`, `${message_language[languages[message.guild.id]]["sSyntaxPrefix"]}`)
+                    .addField(`${prefix}s join-message <action> <value>`, `${message_language[languages[message.guild.id]]["sSyntaxJoinMessage"]}\n*${prefix}s join-message help*`)
+                    .addField(`${prefix}s leave-message <action> <value>`, `${message_language[languages[message.guild.id]]["sSyntaxLeaveMessage"]}\n*${prefix}s leave-message help*`)
+                    .addField(`${prefix}s auto-react <on/off>`, `${message_language[languages[message.guild.id]]["sSyntaxAutoReact"]}`)
                     message.channel.send(Embed)
-                    return
             }
             if(args[0] == "info"){
                 let join_message_status = JSON.parse(fs.readFileSync("./DataBase/join-message-status.json", "utf8"))
@@ -116,17 +103,16 @@ module.exports = {
                     .addFields(
                         {name:"Prefix",value:`${prefix}`},
                         {name:"Join-message Status",value:`${join_message_status_guild}`},
-                        {name:"Join-message Channel",value:`${join_message_channel_id_guild}`},
+                        {name:"Join-message Channel",value:`<#${join_message_channel_id_guild}>`},
                         {name:"Leave-message Status",value:`${leave_message_status_guild}`},
-                        {name:"Leave-message Channel",value:`${leave_message_channel_id_guild}`},
+                        {name:"Leave-message Channel",value:`<#${leave_message_channel_id_guild}>`},
                         {name:"Auto-react",value:`${auto_react_guild}`},
                     )
                     message.channel.send(Embed)
-                    return
             }
             // PREFIX
             if(args[0] == "prefix") {
-                if(!args[1]) return CustomUserError("Veuillez préciser un préfix", "s prefix <new-prefix>",  bot, message, __filename)
+                if(!args[1]) return CustomUserError("SpecifyPrefix", "s prefix <new-prefix>",  bot, message, __filename)
                 let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"))
                 prefixes[message.guild.id] = {
                     prefixes: args[1]
@@ -135,31 +121,29 @@ module.exports = {
                     if (err) console.error();
                 });
                 let Embed = new MessageEmbed()
-                    .setTitle("PREFIX MIS A JOUR")
+                    .setTitle(`${message_language[languages[message.guild.id]]["sPrefixUpdate"]}`)
                     .setColor("#FFCA2B")
-                    .setDescription(`Le préfix a été changé en **${args[1]}** par *${message.author.username}*`)
+                    .setDescription(`${message_language[languages[message.guild.id]]["sPrefixChanged"]} **${args[1]}** ${message_language[languages[message.guild.id]]["By"]} ${message.author}`)
                 message.delete()
                 message.channel.send(Embed)
-                return
             }
             // JOIN MESSAGE
             if(args[0] == "join-message") {
-                if(!args[1] || args[1]=="help" || (args[1]!="on" && args[1]!="off" && args[1]!="set-channel")) {
+                if(!args[1] || args[1]=="help" || !"helponoffset-channel".includes(args[1])) {
                     let Embed = new MessageEmbed()
                     .setTitle("SETTINGS: JOIN-MESSAGE")
                     .setColor("#00C632")
                     .setAuthor(message.author.tag, message.author.displayAvatarURL())
                     .setTimestamp()
-                    .addField(`${prefix}s join-message help`,`\nAffiche cette page`)
-                    .addField(`${prefix}s join-message <on/off>`,`\nActive/désactive le join message`)
-                    .addField(`${prefix}s join-message set-channel <id>`,`\nParamètre le salon où le join message va être envoyé`)
+                    .addField(`${prefix}s join-message help`,`${message_language[languages[message.guild.id]]["sJoinMessageSyntaxHelp"]}`)
+                    .addField(`${prefix}s join-message <on/off>`,`${message_language[languages[message.guild.id]]["sJoinMessageSyntaxOnOff"]}`)
+                    .addField(`${prefix}s join-message set-channel <id>`,`${message_language[languages[message.guild.id]]["sJoinMessageSyntaxSetChannel"]}`)
                 message.channel.send(Embed)
-                return
                 }
                 // SET-STATUS
                 if(args[1] == "on" || args[1] == "off") {
                     let join_message_channel_id = JSON.parse(fs.readFileSync("./DataBase/join-message-channel-id.json", "utf8"))
-                    if(!join_message_channel_id[message.guild.id]) return CustomUserError("Vous devez d'abord définir le salon", "s join-message set-channel <channel-id>", bot, message, __filename)
+                    if(!join_message_channel_id[message.guild.id]) return CustomUserError("SpecifyChannelFirst", "s join-message set-channel <channel-id>", bot, message, __filename)
 
                     let join_message_status = JSON.parse(fs.readFileSync("./DataBase/join-message-status.json", "utf8"))
                     join_message_status[message.guild.id] = {
@@ -169,15 +153,14 @@ module.exports = {
                         if (err) console.error();
                     });
                     let Embed = new MessageEmbed()
-                        .setTitle("JOIN-MESSAGE MIS A JOUR")
+                        .setTitle(`${message_language[languages[message.guild.id]]["sJoinMessageUpdate"]}`)
                         .setColor("#00C632")
                         .setAuthor(message.author.tag, message.author.displayAvatarURL())
                         .setTimestamp()
-                        .setDescription(`Le join message a été mis sur **${args[1]}** par *${message.author}*`)
+                        .setDescription(`${message_language[languages[message.guild.id]]["sJoinMessageChanged"]} **${args[1]}** ${message_language[languages[message.guild.id]]["By"]} ${message.author}`)
                     message.delete()
                     message.channel.send(Embed)
                     // relativeTimeRounding
-                    return
                 }
                 // SET-CHANNEL
                 if(args[1] == "set-channel") {
@@ -193,34 +176,32 @@ module.exports = {
 
                     // console.log("ChannelID: "+args_join_message_channel)
                     let Embed = new MessageEmbed()
-                    .setTitle("JOIN-MESSAGE MIS A JOUR")
+                    .setTitle(`${message_language[languages[message.guild.id]]["sJoinMessageUpdate"]}`)
                     .setColor("#00C632")
                     .setAuthor(message.author.tag, message.author.displayAvatarURL())
                     .setTimestamp()
-                    .setDescription(`Le salon du join message a été changé sur <#${args_join_message_channel}> par *${message.author}*`)
+                    .setDescription(`${message_language[languages[message.guild.id]]["sJoinMessageChannelChanged"]} <#${args_join_message_channel}> ${message_language[languages[message.guild.id]]["By"]} ${message.author}`)
                     message.delete()
                     message.channel.send(Embed)
-                    return
                 }} // Pour envoyer dans un salon spécifique : const Channel = bot.channels.cache.find(channel => channel.id === "(ID)")
             
             // LEAVE MESSAGE
             if(args[0] == "leave-message") {
-                if(!args[1] || args[1]=="help" || (args[1]!="on" && args[1]!="off" && args[1]!="set-channel")) {
+                if(!args[1] || args[1]=="help" || !"helponoffset-channel".includes(args[1])) {
                     let Embed = new MessageEmbed()
                     .setTitle("SETTINGS: LEAVE-MESSAGE")
                     .setColor("#00C632")
                     .setAuthor(message.author.tag, message.author.displayAvatarURL())
                     .setTimestamp()
-                    .addField(`${prefix}s leave-message help`,`\nAffiche cette page`)
-                    .addField(`${prefix}s leave-message <on/off>`,`\nActive/désactive le leave message`)
-                    .addField(`${prefix}s leave-message set-channel <id>`,`\nParamètre le salon où le leave message va être envoyé`)
+                    .addField(`${prefix}s leave-message help`,`${message_language[languages[message.guild.id]]["sLeaveMessageSyntaxHelp"]}`)
+                    .addField(`${prefix}s leave-message <on/off>`,`${message_language[languages[message.guild.id]]["sLeaveMessageSyntaxOnOff"]}`)
+                    .addField(`${prefix}s leave-message set-channel <id>`,`${message_language[languages[message.guild.id]]["sLeaveMessageSyntaxSetChannel"]}`)
                 message.channel.send(Embed)
-                return
                 }
                 // SET-STATUS
                 if(args[1] == "on" || args[1] == "off") {
                     let leave_message_channel_id = JSON.parse(fs.readFileSync("./DataBase/leave-message-channel-id.json", "utf8"))
-                    if(!leave_message_channel_id[message.guild.id]) return CustomUserError("Vous devez d'abord définir le salon", "s leave-message set-channel <channel-id>", bot, message, __filename)
+                    if(!leave_message_channel_id[message.guild.id]) return CustomUserError("SpecifyChannelFirst", "s leave-message set-channel <channel-id>", bot, message, __filename)
 
                     let leave_message_status = JSON.parse(fs.readFileSync("./DataBase/leave-message-status.json", "utf8"))
                     leave_message_status[message.guild.id] = {
@@ -230,15 +211,13 @@ module.exports = {
                         if (err) console.error();
                     });
                     let Embed = new MessageEmbed()
-                        .setTitle("LEAVE-MESSAGE MIS A JOUR")
+                        .setTitle(`${message_language[languages[message.guild.id]]["sLeaveMessageUpdate"]}`)
                         .setColor("#00C632")
                         .setAuthor(message.author.tag, message.author.displayAvatarURL())
                         .setTimestamp()
-                        .setDescription(`Le leave message a été mis sur **${args[1]}** par *${message.author}*`)
+                        .setDescription(`${message_language[languages[message.guild.id]]["sLeaveMessageChanged"]} **${args[1]}** ${message_language[languages[message.guild.id]]["By"]} ${message.author}`)
                     message.delete()
                     message.channel.send(Embed)
-                    // relativeTimeRounding
-                    return
                 }
                 // SET-CHANNEL
                 if(args[1] == "set-channel") {
@@ -254,19 +233,18 @@ module.exports = {
 
                     // console.log("ChannelID: "+args_leave_message_channel)
                     let Embed = new MessageEmbed()
-                    .setTitle("LEAVE-MESSAGE MIS A JOUR")
+                    .setTitle(`${message_language[languages[message.guild.id]]["sLeaveMessageUpdate"]}`)
                     .setColor("#00C632")
                     .setAuthor(message.author.tag, message.author.displayAvatarURL())
                     .setTimestamp()
-                    .setDescription(`Le salon du leave message a été changé sur <#${args_leave_message_channel}> par *${message.author}*`)
+                    .setDescription(`${message_language[languages[message.guild.id]]["sLeaveMessageChannelChanged"]} <#${args_leave_message_channel}> ${message_language[languages[message.guild.id]]["By"]} ${message.author}`)
                     message.delete()
                     message.channel.send(Embed)
-                    return
                 }} // Pour envoyer dans un salon spécifique : const Channel = bot.channels.cache.find(channel => channel.id === "(ID)")
             
             // AUTO REACT
             if(args[0] == "auto-react") {
-                if (args[1]!="on" && args[1]!="off") return UserError("Vous devez définir ceci sur ON/OFF", bot, message, __filename)
+                if (args[1]!="on" && args[1]!="off") return UserError("SpecifyONOFF", bot, message, __filename)
                 let auto_react = JSON.parse(fs.readFileSync("./DataBase/auto-react.json", "utf8"))
 
                 auto_react[message.guild.id] = {
@@ -276,21 +254,18 @@ module.exports = {
                     if (err) console.error();
                 });
                 let Embed = new MessageEmbed()
-                .setTitle("AUTO-REACT MIS A JOUR")
+                .setTitle(`${message_language[languages[message.guild.id]]["sAutoReactUpdate"]}`)
                 .setColor("#00C632")
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
                 .setTimestamp()
-                .setDescription(`L'Auto-React a été mis sur **${args[1]}** par *${message.author}*`)
+                .setDescription(`${message_language[languages[message.guild.id]]["sAutoReactChanged"]} **${args[1]}** ${message_language[languages[message.guild.id]]["By"]} ${message.author}`)
                 message.delete()
                 message.channel.send(Embed)
-                return
             }
-            // UNKNOW ARG 0
-            UserError(`Argument inconnu : ${args[0]}`, bot, message, __filename)
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

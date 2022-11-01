@@ -13,11 +13,26 @@ module.exports = (error, bot, message, filepath, MP) => {
         // console.log(command.name)
         if(element.name==filename) command = element
     });
+    let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+    let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+    if(!languages[message.guild.id]) {
+        languages[message.guild.id] = "en"
+    }
 
 
+    const Index = error.split(" ").shift()
+    const args = error.substr(error.indexOf(" ") + 1).split(" ")
+    let sended = message_language[languages[message.guild.id]]["UserError"][Index]
+    .replace("{0}", `${args[0]}`)
+    .replace("{1}", `${args[1]}`)
+    .replace("{2}", `${args[2]}`)
+    .replace("{3}", `${args[3]}`)
+    .replace("{4}", `${args[4]}`)
     const Embed = new MessageEmbed()
     .setAuthor(message.author.tag, message.author.displayAvatarURL())
-    .addField(`:x: **${error}**`, `__Usage:__ ${prefix}${command.usage}`)
+    // .addField(`:x: **${error}**`, `__Usage:__ ${prefix}${command.usage}`)
+    // .addField(`:x: **${message_language[languages[message.guild.id]]["UserError"][error]}**`, `__Usage:__ ${prefix}${command.usage}`)
+    .addField(`:x: **${sended}**`, `__Usage:__ ${prefix}${command.usage}`)
     // .addField(`:x: **${error}**`, `:arrow_right: ${prefix}${command.usage}`)
     .setColor("RED")
     // .setTimestamp()

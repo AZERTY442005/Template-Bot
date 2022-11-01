@@ -5,19 +5,30 @@ const { MessageEmbed, WebhookClient } = require('discord.js');
 const fetch = require('node-fetch');
 const { PassThrough } = require('stream');
 const UserError = require("../../Functions/UserError.js")
+const CustomUserError = require("../../Functions/CustomUserError.js")
+const translate = require("translate-google")
+
+const redis = require("./redis")
 
 module.exports = {
     name: 'test',
-    description: "Permet de tester une commande test",
+    description: {"fr": "Permet de tester une commande test", "en": "Allows you to test a test command"},
     aliases: ["t"],
     usage: "test <test>",
     category: "BETA",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
+        const prefix = prefixes[message.guild.id].prefixes;
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
         try {
             // if(!message.member.hasPermission("ADMINISTRATOR")) return message.channel.send("ERREUR: Vous n'avez pas la permission de faire ceci!")
             if(message.author.id != config["CreatorID"]) return
-            if(!args[0]) return UserError("Veuillez préciser un test", bot, message, __filename)
+            if(!args[0]) return UserError("SpecifyTest", bot, message, __filename)
             if(args[0] == "old-join-message") { // OK
                 const msg = `Welcome <@${message.member.id}> to the server`
                 const channel = message.guild.channels.cache.get("782886209059029015")
@@ -472,7 +483,7 @@ module.exports = {
                 })
             }
             if(args[0] == "function") {
-                UserError("Veuillez préciser un utilisateur", bot, message, __filename)
+                UserError("SpecifyUser", bot, message, __filename)
             }
             if(args[0] == "error") {
                 Embed = new MessageEmbed()
@@ -485,11 +496,80 @@ module.exports = {
             if(args[0] == "ping") {
                 console.log(bot.ws.ping)
             }
+            if(args[0] == "translate") {
+                if(!args[1]) return CustomUserError("SpecifyLanguage", "test translate <language> <text>", bot, message, __filename)
+                if(!args[2]) return CustomUserError("SpecifyText", "test translate <language> <text>", bot, message, __filename)
+                
+                translate(args.slice(2).join(" "), {to: args[1]}).then(res => {
+                    message.lineReplyNoMention(`${res}`)
+                }).catch(err => {
+                    Error("UnableToTranslate", bot, message, __filename)
+                })
+
+            }
+            if(args[0] == "language") {
+                let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+                let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+
+                if(!languages[message.guild.id]) {
+                    languages[message.guild.id] = "fr"
+                }
+                console.log(prettyFormat(languages))
+                console.log(prettyFormat(message_language))
+                fs.writeFile("./DataBase/languages.json", JSON.stringify(languages), (err) => {
+                    if (err) console.error();
+                })
+
+                message.lineReplyNoMention(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
+            }
+            if(args[0] == "file") {
+                const BlockedLinks = fs.readFileSync("./DataBase/blocked-links.txt", "utf8").split("\n")
+                console.log(File)
+                console.log("arr: "+File.split("\n"))
+            }
+            if(args[0] == "feedback") { // OK
+                let filter = m => m.author.id === message.author.id
+                message.channel.send(`Veuillez écrire votre message à envoyer`).then(() => {
+                message.channel.awaitMessages(filter, {
+                    max: 1,
+                    time: 30000,
+                    errors: ['time']
+                    })
+                    .then(message2 => {
+                        message2 = message2.first()
+                        if("cancelstopannuler".includes(message2.content)) return message.lineReplyNoMention("Annulé")
+                        message.lineReplyNoMention("Envoyé avec succès")
+                        console.log(message2.content)
+                    })
+                    .catch(collected => {
+                        message.lineReplyNoMention('Temps écoulé');
+                    });
+                })
+            }
+            if(args[0] == "guildcreate") { // OK
+                let Embed = new MessageEmbed()
+                .setTitle(`USER GUIDE`)
+                .setColor("GOLD")
+                .setDescription(`👋 Hey, I'm **${config["BotInfo"]["name"]}**, a French Multipurpose Bot, and I am going to do my best to help you !!!\nMy default Prefix is \`${prefix}\``)
+                .addField(`🔔 You can edit my prefix`, `\`${prefix}settings prefix <new-prefix>\``)
+                .addField(`🤖 You can check my commands at`, `\`${prefix}help\``)
+                .addField(`🌎 You can change my language by`, `\`${prefix}language <lang>\``)
+                .addField(`⚙ You can setup me by`, `\`${prefix}settings help\``)
+                .setThumbnail(config["BotInfo"]["IconURL"])
+                .setTimestamp()
+                message.channel.send(Embed)
+            }
+            // if(args[0] == "redis") {
+            //     const redisClient = await
+            //     if(args[1]=="set") {
+
+            //     }
+            // }
 
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

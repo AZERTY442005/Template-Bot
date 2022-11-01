@@ -1,9 +1,28 @@
 const fs = require('fs')
 const fetch = require('node-fetch');
+const mongoose = require("mongoose")
+const { MongoDB } = require("../config.json")
+// const redismute = require("./../commands/BETA/redismute")
+// const redistest = require("./../commands/BETA/redistest")
 
 module.exports = {
     name: 'ready',
     execute(bot) {
+
+        // redismute(bot)
+        // redistest(bot)
+
+        // mongoose.connect(MongoDB, {
+        //     useNewUrlParser: true,
+        //     useUnifiedTopology: true,
+        //     keepAlive: true,
+        //     userFindAndModify: false
+        // }).then(() => {
+        //     console.log("MongoDB Connected")
+        // }).catch(err => {
+        //     console.log("MongoDB Error")
+        // })
+
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
 
         // bot.user.setActivity()

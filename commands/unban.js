@@ -16,15 +16,15 @@ function getBannedIdFromMention(mention) {
 
 module.exports = {
     name: "unban",
-    description: "Débanni un membre",
+     description: {"fr": "Débanni un membre", "en": "Unban a member"},
     aliases: [],
     usage: "unban <userID> (<reason>)",
     category: "Moderation",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("BAN_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Bannir des Membres", bot, message, __filename)
-            if(!args[0]) return UserError("Veuillez préciser un ID d'utilisateur", bot, message, __filename)
+            if(!(message.member.hasPermission("BAN_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("BAN_MEMBERS", bot, message, __filename)
+            if(!args[0]) return UserError("SpecifyUserID", bot, message, __filename)
 
 
             let reason = args.slice(1).join(" ");
@@ -48,9 +48,9 @@ module.exports = {
             .setTimestamp()
 
             message.guild.fetchBans().then(bans=> {
-            if(bans.size == 0) return Error("Aucun utilisateur n'est banni", bot, message, __filename)
+            if(bans.size == 0) return Error("NoUserIsBanned", bot, message, __filename)
             let bUser = bans.find(b => b.user.id == userID)
-            if(!bUser) return Error("Cet utilisateur n'est pas banni", bot, message, __filename)
+            if(!bUser) return Error("ThisUserIsNotBanned", bot, message, __filename)
             message.guild.members.unban(bUser.user, `${message.author.tag}: ${reason}`)
             message.delete()
             message.channel.send(banembed);
@@ -58,7 +58,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

@@ -7,17 +7,22 @@ const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'warn',
-    description: "Averti un utilisateur",
+    description: {"fr": "Averti un utilisateur", "en": "Warn a user"},
     aliases: [],
     usage: "warn <user> <reason>",
     category: "Moderation",
     execute(message, args, bot) {
+        let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
-        let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
         try {
-            if(!(message.member.hasPermission("KICK_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Kick des Membres", bot, message, __filename)
-            if(!args[0]) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
+            if(!(message.member.hasPermission("KICK_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("KICK_MEMBERS", bot, message, __filename)
+            if(!args[0]) return UserError("SpecifyUser", bot, message, __filename)
 
             // console.log("TEST0")
 
@@ -54,20 +59,20 @@ module.exports = {
 
 
             const ReasonWarn = args.slice(1).join(" ");
-            if(UserWarn==null) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
-            if(!args[1]) return UserError("Veuillez préciser la raison", bot, message, __filename)
+            if(UserWarn==null) return UserError("SpecifyUser", bot, message, __filename)
+            if(!args[1]) return UserError("SpecifyReason", bot, message, __filename)
             let AvatarWarn = UserWarn.displayAvatarURL()
             //let ChannelWarn = message.guild.channels.cache.find(channel => channel.name === "warns")
             let EmbedWarn = new MessageEmbed()
             .setTitle(`WARN`)
-            .setDescription(`Un utilisateur a été Warn`)
+            .setDescription(`${message_language[languages[message.guild.id]]["WarnDescription"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("ORANGE")
             .setThumbnail(AvatarWarn)
             .addFields(
-                {name:"Modérateur",value:`${message.author}`,inline:true},
-                {name:"Membre",value:`${UserWarn}`,inline:true},
-                {name:"Raison",value:`${ReasonWarn}`,inline:true},
+                {name:`${message_language[languages[message.guild.id]]["Moderator"]}`,value:`${message.author}`,inline:true},
+                {name:`${message_language[languages[message.guild.id]]["Member"]}`,value:`${UserWarn}`,inline:true},
+                {name:`${message_language[languages[message.guild.id]]["Reason"]}`,value:`${ReasonWarn}`,inline:true},
             )
             .setTimestamp()
             message.channel.send(EmbedWarn)
@@ -86,7 +91,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

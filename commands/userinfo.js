@@ -6,14 +6,14 @@ const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'userinfo',
-    description: "affiche les infos d'un utilisateur",
+    description: {"fr": "Affiche les infos d'un utilisateur", "en": "Show user info"},
     aliases: [],
     usage: "userinfo <user>",
     category: "Utility",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!message.mentions.users.first()) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
+            if(!message.mentions.users.first()) return UserError("SpecifyUser", bot, message, __filename)
             const flags = {
                 DISCORD_EMPLOYEE: 'Discord Employee',
                 DISCORD_PARTNER: 'Discord Partner',
@@ -63,7 +63,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

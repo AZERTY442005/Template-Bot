@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 
 module.exports = {
     name: 'ping',
-    description: "Calcule le ping du Bot",
+    description: {"fr": "Calcule le ping du Bot", "en": "Calculates the Bot's ping"},
     aliases: [],
     usage: "ping",
     category: "Default",
@@ -25,7 +25,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

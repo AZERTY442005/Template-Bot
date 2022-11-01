@@ -2,6 +2,7 @@ const fs = require("fs");
 
 module.exports = {
     name: "DISABLEDmessage",
+    // name: "message",
     execute(message) {
         // let DATAS = JSON.parse(fs.readFileSync("./DataBase/DATAS.json", "utf8")); // DATAS SETUP
         if (message.author.bot) return;

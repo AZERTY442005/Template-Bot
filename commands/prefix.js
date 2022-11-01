@@ -4,12 +4,17 @@ const fetch = require('node-fetch');
 
 module.exports = {
     name: 'prefix',
-    description: "Affiche le préfix",
+    description: {"fr": "Affiche le préfix", "en": "Show prefix"},
     aliases: [],
     usage: "prefix",
     category: "Default",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
         try {
             try {
                 let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
@@ -17,18 +22,18 @@ module.exports = {
                 let Embed = new MessageEmbed()
                 .setTitle("PREFIX")
                 .setColor("#FFCA2B")
-                .setDescription(`Le préfix actuel est **${prefix}**`)
+                .setDescription(`${message_language[languages[message.guild.id]]["ActualPrefix"]} **${prefix}**`)
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
                 .setTimestamp()
                 message.channel.send(Embed)
             } catch {
-                message.lineReplyNoMention("Erreur: Aucun préfix customisé...")
-                message.lineReplyNoMention("Préfix customisé créé avec succès")
+                // message.lineReplyNoMention("Erreur: Aucun préfix customisé...")
+                // message.lineReplyNoMention("Préfix customisé créé avec succès")
             }
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

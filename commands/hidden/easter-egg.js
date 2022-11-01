@@ -3,7 +3,7 @@ const fetch = require('node-fetch');
 
 module.exports = {
     name: 'easter-egg',
-    description: "GG tu as trouvé l'easter-egg!!!",
+    description: {"fr": "GG tu as trouvé l'easter-egg!!!", "en": "GG you found the easter-egg!!!"},
     aliases: [],
     usage: "easter-egg",
     category: "Fun",
@@ -16,7 +16,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

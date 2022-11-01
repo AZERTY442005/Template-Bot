@@ -3,7 +3,7 @@ const fs = require("fs")
 
 module.exports = {
     name: 'credits',
-    description: "Affiche mes credits",
+    description: {"fr": "Affiche mes credits", "en": "Show my credits"},
     aliases: ["version", "bot", "info", "botinfo", "ver"],
     usage: "credits",
     category: "Default",
@@ -18,6 +18,7 @@ module.exports = {
             .addFields(
                 {name:`Name`,value:`${config["BotInfo"]["name"]}`,inline:true},
                 {name:`Version`,value:`${config["BotInfo"]["version"]}`,inline:true},
+                {name:`Updated at`,value:`${config["BotInfo"]["UpdatedAt"]}`,inline:true},
                 {name:`Created at`,value:`${config["BotInfo"]["CreatedAt"]}`,inline:true},
                 {name:`Creator`,value:"<@452454205056352266>",inline:true},
                 {name:`Owner`,value:`<@${config["OwnerID"]}>`,inline:true},
@@ -28,7 +29,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

@@ -1,18 +1,24 @@
 const { MessageEmbed } = require("discord.js");
 const fs = require('fs')
+const fetch = require('node-fetch');
 
 module.exports = {
     name: 'invite',
-    description: "Envoie le lien d'invitation du bot",
+    description: {"fr": "Envoie le lien d'invitation du bot", "en": "Send the bot invitation link"},
     aliases: [],
     usage: "invite",
     category: "Default",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
         try {
             const Embed = new MessageEmbed()
             .setTitle(`INVITE`)
-            .setDescription(`Voici mon lien d'invitation\nhttps://discord.com/api/oauth2/authorize?client_id=${config["BotInfo"]["ID"]}&permissions=8&scope=bot"`)
+            .setDescription(`${message_language[languages[message.guild.id]]["InviteLink"]}\nhttps://discord.com/api/oauth2/authorize?client_id=${config["BotInfo"]["ID"]}&permissions=8&scope=bot"`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setThumbnail(config["BotInfo"]["IconURL"])
             .setColor("AQUA")
@@ -21,7 +27,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

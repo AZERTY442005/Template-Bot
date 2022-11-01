@@ -6,19 +6,24 @@ const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'announce',
-    description: "Envoie un message embed pour annoncer",
+    description: {"fr": "Envoie un message d'annonce", "en": "Send an announcement message"},
     aliases: [],
     usage: "announce <msg>",
     category: "Utility",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Administrateur", bot, message, __filename)
-            if(!args[0]) UserError("Veuillez préciser un message", bot, message, __filename)
+            let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+            let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+            if(!languages[message.guild.id]) {
+                languages[message.guild.id] = "en"
+            }
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("ADMINISTRATOR", bot, message, __filename)
+            if(!args[0]) UserError("SpecifyMessage", bot, message, __filename)
             message.delete()
             argsresult = args.slice(0).join(" ");
             let EmbedEmbed = new MessageEmbed()
-                .setTitle("ANNONCE")
+                .setTitle(`${message_language[languages[message.guild.id]]["Announcement"]}`)
                 .setDescription(`${argsresult}`)
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
                 .setColor("RANDOM")
@@ -27,7 +32,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

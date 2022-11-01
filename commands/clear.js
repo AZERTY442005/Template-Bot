@@ -5,15 +5,15 @@ const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'clear',
-    description: "Supprime des messages",
+    description: {"fr": "Supprime des messages", "en": "Deletes messages"},
     aliases: ["clean"],
     usage: "clear <nb>",
     category: "Moderation",
     execute(message, args, bot) {
       let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
       try {
-        if(!(message.member.hasPermission("MANAGE_MESSAGES") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Gérer les Messages", bot, message, __filename)
-        if(Number(args[0]) <= 0 || isNaN(args[0])) return UserError("Veuillez préciser un nombre supérieur à 0", bot, message, __filename)
+        if(!(message.member.hasPermission("MANAGE_MESSAGES") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("MANAGE_MESSAGES", bot, message, __filename)
+        if(Number(args[0]) <= 0 || isNaN(args[0])) return UserError("SpecifyNumberGreaterThan0", bot, message, __filename)
         const amount = Number(args[0]) > 100
             ? 101
             : Number(args[0]) + 1;
@@ -27,12 +27,12 @@ module.exports = {
                 }, 2500);
               });
           }).catch(error => {
-            Error("Impossible de supprimer ce nombre de message", bot, message, __filename)
+            Error("UnableToDeleteThisNumberOfMessages", bot, message, __filename)
           })
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

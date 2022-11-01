@@ -8,16 +8,20 @@ const UserErrorNoPermissions = require("../../Functions/UserErrorNoPermissions.j
 
 module.exports = {
     name: 'xp',
-    description: "Gère le Système d'XP du serveur",
-    aliases: [],
+    description: {"fr": "Gère le Système d'XP du serveur", "en": "Manages Server XP System"},
+    aliases: ["exp", "experience"],
     usage: "xp help",
     category: "Utility",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
+        const prefix = prefixes[message.guild.id].prefixes;
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
         try {
-            let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
-            const prefix = prefixes[message.guild.id].prefixes;
-
             var times = 10;
             let temp = 10
             let levels_requirments = []
@@ -26,10 +30,12 @@ module.exports = {
                 temp = temp * 1.5
             }
 
+            // console.log(fs.readFileSync("./DataBase/xp-system.json", "utf8"))
             let xp_system = JSON.parse(fs.readFileSync("./DataBase/xp-system.json", "utf8"))
             if(!xp_system["status"]) xp_system["status"] = {}
             if(!xp_system["status"][message.guild.id]) {
-                xp_system["status"][message.guild.id] = "on"
+                // xp_system["status"][message.guild.id] = "on"
+                xp_system["status"][message.guild.id] = `${config["DefaultXPStatus"]}`
                 fs.writeFile("./DataBase/xp-system.json", JSON.stringify(xp_system, null, 4), (err) => {
                     if (err) console.error();
                 });
@@ -60,7 +66,7 @@ module.exports = {
             }
 
             if(!args[0]) { // SEE OWN XP
-                if(xp_system["status"][message.guild.id]=="off") return Error("Le système d'XP est désactivé sur ce serveur", bot, message, __filename)
+                if(xp_system["status"][message.guild.id]=="off") return Error("XPSystemIsDisabled", bot, message, __filename)
                 let EmbedXP = new MessageEmbed()
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
                 .setColor("AQUA")
@@ -73,7 +79,7 @@ module.exports = {
             }
             let usermention = message.mentions.users.first();
             if(usermention && !args[1]) { // SEE OTHERS XP
-                if(xp_system["status"][message.guild.id]=="off") return Error("Le système d'XP est désactivé sur ce serveur", bot, message, __filename)
+                if(xp_system["status"][message.guild.id]=="off") return Error("XPSystemIsDisabled", bot, message, __filename)
                 if(!xp_system["messages"][message.guild.id][usermention.id]) {
                     xp_system["messages"][message.guild.id][usermention.id] = 0
                     fs.writeFile("./DataBase/xp-system.json", JSON.stringify(xp_system, null, 4), (err) => {
@@ -101,11 +107,11 @@ module.exports = {
                 .setTitle(`XP COMMANDS`)
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
                 .setColor("AQUA")
-                .addField(`${prefix}xp (<user>)`, "Permet de voir l'XP d'un utilisateur")
-                .addField(`${prefix}xp <on/off>`, "Active/Désactive le système d'XP")
-                .addField(`${prefix}xp set <user> <add/remove> <number>`, "Modifie l'XP d'un utilisateur")
-                .addField(`${prefix}xp reset <user>`, "Réinitialise l'XP d'un utilisateur")
-                .addField(`${prefix}xp reset-all`, "Réinitialise l'XP de tous les utilisateurs")
+                .addField(`${prefix}xp (<user>)`, `${message_language[languages[message.guild.id]]["XPSyntaxUser"]}`)
+                .addField(`${prefix}xp <on/off>`, `${message_language[languages[message.guild.id]]["XPSyntaxOnOff"]}`)
+                .addField(`${prefix}xp set <user> <add/remove> <number>`, `${message_language[languages[message.guild.id]]["XPSyntaxSet"]}`)
+                .addField(`${prefix}xp reset <user>`, `${message_language[languages[message.guild.id]]["XPSyntaxReset"]}`)
+                .addField(`${prefix}xp reset-all`, `${message_language[languages[message.guild.id]]["XPSyntaxResetall"]}`)
                 .setTimestamp()
                 message.channel.send(EmbedHelp)
                 return
@@ -119,7 +125,7 @@ module.exports = {
                 });
                 let EmbedStatus = new MessageEmbed()
                 .setTitle(`XP SYSTEM`)
-                .setDescription(`Le système d'XP a été changé sur **${args[0]}**`)
+                .setDescription(`${message_language[languages[message.guild.id]]["XPSystemTurned"]} **${args[0]}**`)
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
                 .setColor("AQUA")
                 .setTimestamp()
@@ -139,15 +145,15 @@ module.exports = {
                 let EmbedResetAll = new MessageEmbed()
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
                 .setColor("AQUA")
-                .addField("XP SYSTEM RESET-ALL", `Toute l'XP du serveur a été réinitialisé par ${message.author}`)
+                .addField("XP SYSTEM RESET-ALL", `${message_language[languages[message.guild.id]]["XPResetedBy"]} ${message.author}`)
                 .setTimestamp()
                 message.channel.send(EmbedResetAll)
                 return
             }
             if(args[0] == "set") { // CHANGE XP OF A USER
-                if(!usermention) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
+                if(!usermention) return UserError("SpecifyUser", bot, message, __filename)
                 if(args[2] == "level") {
-                    if(!args[3]) return UserError("Veuillez préciser un nombre", bot, message, __filename)
+                    if(!args[3]) return UserError("SpecifyNumber", bot, message, __filename)
                     const usermention = message.mentions.users.first();
                     xp_system["levels"][message.guild.id][usermention.id] = parseInt(args[3])
                     fs.writeFile("./DataBase/xp-system.json", JSON.stringify(xp_system, null, 4), (err) => {
@@ -156,7 +162,7 @@ module.exports = {
                     return
                 }
                 if(args[2] == "messages") {
-                    if(!args[3]) return UserError("Veuillez préciser un nombre", bot, message, __filename)
+                    if(!args[3]) return UserError("SpecifyNumber", bot, message, __filename)
                     const usermention = message.mentions.users.first();
                     xp_system["messages"][message.guild.id][usermention.id] = parseInt(args[3])
                     fs.writeFile("./DataBase/xp-system.json", JSON.stringify(xp_system, null, 4), (err) => {
@@ -164,10 +170,10 @@ module.exports = {
                     });
                     return
                 }
-                UserError("Veuillez préciser une variable", bot, message, __filename)
+                UserError("SpecifyVariableXP", bot, message, __filename)
             }
             if(args[0] == "reset") { // RESET XP OF A USER
-                if(!usermention) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
+                if(!usermention) return UserError("SpecifyUser", bot, message, __filename)
                 xp_system["messages"][message.guild.id][usermention.id] = 0
                 xp_system["levels"][message.guild.id][usermention.id] = 0
                 fs.writeFile("./DataBase/xp-system.json", JSON.stringify(xp_system, null, 4), (err) => {
@@ -177,14 +183,14 @@ module.exports = {
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
                 .setColor("AQUA")
                 .setThumbnail(usermention.displayAvatarURL())
-                .addField("XP SYSTEM RESET", `L'XP de ${usermention} a été réinitialisé par ${message.author}`)
+                .addField("XP SYSTEM RESET", `${message_language[languages[message.guild.id]]["XPOf"]} ${usermention} ${message_language[languages[message.guild.id]]["WasResetedBy"]} ${message.author}`)
                 .setTimestamp()
                 message.channel.send(EmbedReset)
             }
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

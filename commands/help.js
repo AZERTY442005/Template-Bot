@@ -6,16 +6,21 @@ const {format: prettyFormat} = require('pretty-format');
 
 module.exports = {
     name: 'help',
-    description: "Permet d'afficher cette page",
+    description: {"fr": "Permet d'afficher cette page", "en": "View this page"},
     aliases: [],
     usage: "help",
     category: "Default",
     execute(message, args, bot) {
         // console.log("/help")
         //            message.reply(`\n **${prefix}help:** Permet d'afficher cette page \n **${prefix}ping:** Me fait écrire pong \n **${prefix}stats:** Permet de voir les stats du server **${prefix}roll:** Choisit un nombre aléatoire entre 1 et 6 \n **${prefix}kick:** Kick un utilisateur \n **${prefix}ban:** Ban un utilisateur \n **${prefix}hey:** Je te dis hey \n **${prefix}me:** Je te dis qui tu es \n **${prefix}say:** Me fais parler`);            
+        let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
-        let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
         try {
             const Categories = ["Default", "Moderation", "Utility", "Fun"]
             // const Commands = bot.commands.sort(function(a, b) {
@@ -59,9 +64,10 @@ module.exports = {
             for(let i=0; i<Commands_chunk.length;i++) {
                 let EmbedHelp = new MessageEmbed()
                 if(i==0) {
-                    EmbedHelp.setTitle("__Page d'aide__")
+                    // EmbedHelp.setTitle("__Page d'aide__")
+                    EmbedHelp.setTitle(`__${message_language[languages[message.guild.id]]["HelpPage"]["Title"]}__`)
                     .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                    .setDescription(`__Préfix: ${prefix}__\n<argument> Argument obligatoire\n(<argument>) Argument facultatif\n[<argument>] Argument nécessaire aux facultatifs`)
+                    .setDescription(`__Prefix: ${prefix}__\n${message_language[languages[message.guild.id]]["HelpPage"]["Description"]}`)
                 }
                 EmbedHelp.setColor("GOLD")
                 
@@ -73,14 +79,17 @@ module.exports = {
                 //     })
                 // })
 
-                const CategoriesDescription = {"Default": "Commandes de base ou nécessaires", "Moderation": "Commandes de contrôle", "Utility": "Commandes Supplémentaires et utiles", "Fun": "Commandes d'amusement"}
+                // const CategoriesDescription = {"Default": "Commandes de base ou nécessaires", "Moderation": "Commandes de contrôle", "Utility": "Commandes Supplémentaires et utiles", "Fun": "Commandes d'amusement"}
+                const CategoriesDescription = {"Default": `${message_language[languages[message.guild.id]]["HelpPage"]["Categories"]["Default"]}`, "Moderation": `${message_language[languages[message.guild.id]]["HelpPage"]["Categories"]["Moderation"]}`, "Utility": `${message_language[languages[message.guild.id]]["HelpPage"]["Categories"]["Utility"]}`, "Fun": `${message_language[languages[message.guild.id]]["HelpPage"]["Categories"]["Fun"]}`}
                 Commands_chunk[i].forEach(command => {
                     // if(Categories.includes(command)) return console.log("QOISGDOSQIUYF")
                     if(last_category!=command.category) {
                         last_category = command.category
                         EmbedHelp.addField(`__${command.category}__`, `${CategoriesDescription[command.category]}`, false)
                     }
-                    EmbedHelp.addField(command.name, `${command.description}\n*${prefix}${command.usage}*`, true)
+                    // EmbedHelp.addField(command.name, `${command.description}\n*${prefix}${command.usage}*`, true)
+                    // EmbedHelp.addField(command.name, `${command.description[languages[message.guild.id]]}\n*${prefix}${command.usage}*`, true)
+                    EmbedHelp.addField(command.name, `${command.description[languages[message.guild.id]]}\n\`${prefix}${command.usage}\``, true)
                 })
                 
                 if(i==Commands_chunk.length-1) {
@@ -96,7 +105,8 @@ module.exports = {
             let EmbedHelp1 = new MessageEmbed()
                 .setTitle("__Page d'aide__")
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                .setDescription(`__Préfix: ${prefix}__\n<argument> Argument obligatoire\n(<argument>) Argument facultatif\n[<argument>] Argument nécessaire aux facultatifs`)
+                // .setDescription(`__Préfix: ${prefix}__\n<argument> Argument obligatoire\n(<argument>) Argument facultatif\n[<argument>] Argument nécessaire aux facultatifs`)
+                .setDescription(`__Préfix: ${prefix}__\n<argument> Argument obligatoire\n(<argument>) Argument facultatif`)
                 .setColor("GOLD")
 
                 .addField("__**Par défaut**__", "Commandes de base ou nécessaires")
@@ -200,7 +210,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

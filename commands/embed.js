@@ -5,7 +5,7 @@ const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'embed',
-    description: "Me fait écrire un message embed",
+    description: {"fr": "Me fait écrire un message embed", "en": "Makes me write an embed message"},
     aliases: [],
     usage: "embed (<title>) <message>",
     category: "Utility",
@@ -13,7 +13,7 @@ module.exports = {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
     //        if(!args[0]) return message.channel.send("ERREUR: Veuillez préciser une couleur")
-            if(!args[0]) return UserError("Veuillez préciser un titre ou un message", bot, message, __filename)
+            if(!args[0]) return UserError("SpecifyTitleOrMessage", bot, message, __filename)
             if(args[1]) {
                 const title1 = args[0]
                 const desc1 = args.slice(1).join(" ");
@@ -36,7 +36,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

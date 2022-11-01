@@ -6,17 +6,23 @@ const {format: prettyFormat} = require('pretty-format');
 const UserError = require("../../Functions/UserError.js")
 const Error = require("../../Functions/Error.js")
 const CustomUserError = require("../../Functions/CustomUserError.js")
+const Success = require("../../Functions/Success.js");
 
 module.exports = {
     name: 'owner',
-    description: "Contrôle total du bot",
+    description: {"fr": "Contrôle total du Bot", "en": "Full Bot control"},
     aliases: ["o"],
     usage: "owner help",
     category: "Owner",
     execute(message, args, bot) {
+        let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
-        let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
         try {
             // if(message.author.id != config["OwnerID"] && message.author.id != config["CreatorID"]) return message.lineReply(`Erreur: Vous n'êtes pas le propriétaire du bot`)
             if(message.author.id != config["OwnerID"] && message.author.id != config["CreatorID"]) return
@@ -25,7 +31,7 @@ module.exports = {
                 .setTitle(`OWNER COMMANDS`)
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
                 .setColor("RED")
-                .addField(`${prefix}owner <enable/disable>`, `Active/Désactive le bot`)
+                .addField(`${prefix}owner <enable/disable>`, `${message_language[languages[message.guild.id]]["OwnerSyntaxEnableDisable"]}`)
                 .addField(`${prefix}owner admin <on/off>`, `Active/Désactive les permissions d'admin du bot sur un serveur`)
                 .addField(`${prefix}owner beta <on/off>`, `Active/Désactive la Version BETA`)
                 .addField(`${prefix}owner blacklist help`, `Active/Désactive la Version BETA`)
@@ -74,7 +80,7 @@ module.exports = {
                 message.delete()
                 const CustomStatus = ["online", "idle", "dnd", "offline"]
                 // const Types = ["PLAYING", "WATCHING", "LISTENING", "STREAMING"]
-                if(!args[1] || !CustomStatus.includes(args[1])) return UserError("Veuillez définir un status valide (online, idle, dnd, offline)", bot, message, __filename, true)
+                if(!args[1] || !CustomStatus.includes(args[1])) return UserError("SpecifyValidStatus", bot, message, __filename, true)
                 // if(!args[2] || !Types.includes(args[2])) return message.lineReply(`Erreur: Veuillez définir un type valide (PLAYING, WATCHING, LISTENING, STREAMING)\n*${prefix}owner status <status> <type> (<text>)*`)
                 const status = args[1]
                 const type = args[2]
@@ -196,30 +202,30 @@ module.exports = {
             }
             if(args[0]=="logs") {
                 message.delete()
-                if(!args[1]) return UserError("Veuillez préciser le lien du Webhook", bot, message, __filename, true)
-                if(!args[1].includes("https://discord.com/api/webhooks/")) return UserError("Veuillez préciser un lien Webhook valide", bot, message, __filenam, true)
+                if(!args[1]) return UserError("SpecifyWebhookURL", bot, message, __filename, true)
+                if(!args[1].includes("https://discord.com/api/webhooks/")) return UserError("SpecifyValidWebhookURL", bot, message, __filenam, true)
 
 
                 fs.writeFile("./DataBase/webhook-logs-url.txt", args[1], (err) => {
                     if (err) console.error();
                 })
-                message.channel.send(`Modification du Webhook des logs effectuée !!!`)
+                message.author.send(`${message_language[languages[message.guild.id]]["WebhookUpdated"]}`)
             }
             if(args[0]=="beta") {
                 message.delete()
-                if(!args[1] || !args[1]=="on" && !args[1]=="off") return CustomUserError("Veuillez préciser on ou off", "owner beta <on/off>", bot, message, __filename, true)
+                if(!args[1] || !args[1]=="on" && !args[1]=="off") return CustomUserError("SpecifyONOFF", "owner beta <on/off>", bot, message, __filename, true)
                 fs.writeFile("./DataBase/beta.txt", args[1], (err) => {
                     if (err) console.error();
                 })
-                message.channel.send(`Version BETA modifiée avec succès !!! (redémarrage nécessaire)`)
+                message.author.send(`${message_language[languages[message.guild.id]]["BetaUpdated"]}`)
             }
             if(args[0]=="admin") {
                 message.delete()
-                if(!args[1] || !args[1]=="on" && !args[1]=="off") return CustomUserError("Veuillez préciser on ou off", "owner admin <on/off>", bot, message, __filename, true)
+                if(!args[1] || !args[1]=="on" && !args[1]=="off") return CustomUserError("SpecifyONOFF", "owner admin <on/off>", bot, message, __filename, true)
                 fs.writeFile("./DataBase/admin.txt", args[1], (err) => {
                     if (err) console.error();
                 })
-                message.channel.send(`Admin Perms modifiées avec succès !!!`)
+                message.author.send(`${message_language[languages[message.guild.id]]["AdminPermsUpdated"]}`)
             }
             if(args[0]=="host") {
                 let EmbedHelp = new MessageEmbed()
@@ -234,17 +240,17 @@ module.exports = {
             if(args[0]=="dm") {
                 message.delete()
                 let dmUser = message.mentions.users.first();
-                if(!args[1]) return UserError("Veuillez préciser un utilisateur", bot, message, __filename, true)
-                if(!dmUser) return message.channel.send(`Erreur: Veuillez préciser un utilisateur valide`)
-                //if(dmUser.id == `782885398316711966`) return message.channel.send(`ERREUR: Veuillez préciser un utilisateur valide (pas moi de préférence)`)
-                if(!args[2]) return UserError("Veuillez préciser un message", bot, message, __filename, true)
+                if(!args[1]) return UserError("SpecifyUser", bot, message, __filename, true)
+                if(!dmUser) return message.author.send(`${message_language[languages[message.guild.id]]["ErrorSpecifyValidUser"]}`)
+                //if(dmUser.id == `782885398316711966`) return message.author.send(`ERREUR: Veuillez préciser un utilisateur valide (pas moi de préférence)`)
+                if(!args[2]) return UserError("SpecifyMessage", bot, message, __filename, true)
                 const dmMessage = args.slice(2).join(` `);
                 dmUser.send(dmMessage)
                 .then(res => {
-                    message.author.send(`Message envoyé à ${dmUser} avec succès`)
+                    message.author.send(`${message_language[languages[message.guild.id]]["MessageSentTo"]} ${dmUser} ${message_language[languages[message.guild.id]]["WithSuccess"]}`)
                 })
                 .catch(error => {
-                    message.author.send(`Impossible d'envoyer un Message Privé à ${dmUser}`)
+                    message.author.send(`${message_language[languages[message.guild.id]]["UnableToSendDM"]} ${dmUser}`)
                 })
             }
             if(args[0]=="database") {
@@ -282,7 +288,7 @@ module.exports = {
                     message.guild.member(message.author).roles.add(AdminRole, `Admin Role was asked`).catch(console.error);
     
                     message.delete()
-                    message.author.send(`You got Admin Role on *${message.guild.name}*`)
+                    message.author.send(`${message_language[languages[message.guild.id]]["AdminRoleRetrived"]} *${message.guild.name}*`)
                 }
 
 
@@ -306,20 +312,21 @@ module.exports = {
                 } else GiveAdminRole()
             }
             if(args[0]=="db-upload") {
-                if(message.attachments.array().length==0) return message.lineReply(`Erreur: Aucun fichier n'a été envoyé`)
+                if(message.attachments.array().length==0) return Error("NoFileWasSended", bot, message, __filename)
 
                 async function download(url, name){
                     await request.get(url)
                         .on('error', console.error)
                         .pipe(fs.createWriteStream(`./DataBase/${name}`));
-                    const Embed = new MessageEmbed()
-                    .setTitle("DB-UPLOAD")
-                    .setDescription(`__${name}__ Successfully Downloaded`)
-                    .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                    .setColor("GOLD")
-                    .setTimestamp()
+                    // const Embed = new MessageEmbed()
+                    // .setTitle("DB-UPLOAD")
+                    // .setDescription(`__${name}__ Successfully Downloaded`)
+                    // .setAuthor(message.author.tag, message.author.displayAvatarURL())
+                    // .setColor("GOLD")
+                    // .setTimestamp()
+                    Success(`DownloadSuccess ${name}`, bot, message, __filename)
                     // message.channel.send(Embed)
-                    message.author.send(Embed)
+                    // message.author.send(Embed)
 
                     setTimeout(function(){
                         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
@@ -350,9 +357,9 @@ module.exports = {
                     .setTitle("BLACKLIST COMMANDS")
                     .setAuthor(message.author.tag, message.author.displayAvatarURL())
                     .setColor("#B80000")
-                    .addField(`${prefix}owner blacklist list`, "Liste les utilisateurs blacklistés")
-                    .addField(`${prefix}owner blacklist add <UserID>`, "Ajoute un utilisateur à la Blacklist")
-                    .addField(`${prefix}owner blacklist remove <UserID>`, "Supprime un utilisateur de la Blacklist")
+                    .addField(`${prefix}owner blacklist list`, `${message_language[languages[message.guild.id]]["OwnerBlacklistSyntaxList"]}`)
+                    .addField(`${prefix}owner blacklist add <UserID>`, `${message_language[languages[message.guild.id]]["OwnerBlacklistSyntaxAdd"]}`)
+                    .addField(`${prefix}owner blacklist remove <UserID>`, `${message_language[languages[message.guild.id]]["OwnerBlacklistSyntaxRemove"]}`)
                     .setTimestamp()
                     message.author.send(EmbedHelp)
                 }
@@ -371,16 +378,16 @@ module.exports = {
                     message.lineReplyNoMention(Embed)
                 }
                 if(args[1]=="add") {
-                    if(!args[2]) return UserError("Veuillez préciser l'ID d'utilisateur", bot, message, __filename, true)
-                    if(args[2]==config["OwnerID"] || args[2]==config["CreatorID"]) return Error("Impossible de blacklister le propriétaire du bot", bot, message, __filename)
-                    if(blacklist.includes(args[2])) return Error("Cet utilisateur est déjà Blacklisté", bot, message, __filename)
+                    if(!args[2]) return UserError("SpecifyUserID", bot, message, __filename, true)
+                    if(args[2]==config["OwnerID"] || args[2]==config["CreatorID"]) return Error("UnableToBlacklistBotsOwner", bot, message, __filename)
+                    if(blacklist.includes(args[2])) return Error("UserAlreadyBlacklisted", bot, message, __filename)
                     blacklist.push(args[2])
                     fs.writeFile("./DataBase/blacklist.json", JSON.stringify(blacklist), (err) => {
                         if (err) console.error();
                     })
                     let EmbedAdd = new MessageEmbed()
                     .setTitle("BLACKLIST")
-                    .setDescription(`<@${args[2]}> a été ajouté à la Blacklist`)
+                    .setDescription(`<@${args[2]}> ${message_language[languages[message.guild.id]]["AddedToBlacklist"]}`)
                     .setAuthor(message.author.tag, message.author.displayAvatarURL())
                     .setColor("#B80000")
                     .setTimestamp()
@@ -393,8 +400,8 @@ module.exports = {
                             return ele != value; 
                         });
                     }
-                    if(!args[2]) return CustomUserError("Veuillez préciser l'ID d'utilisateur", "owner blacklist remove <user-ID>", bot, message, __filename, true)
-                    if(!blacklist.includes(args[2])) return Error("Cet utilisateur n'est pas Blacklisté", bot, message, __filename)
+                    if(!args[2]) return CustomUserError("SpecifyUserID", "owner blacklist remove <user-ID>", bot, message, __filename, true)
+                    if(!blacklist.includes(args[2])) return Error("UserNotBlacklisted", bot, message, __filename)
     
                     blacklist = arrayRemove(blacklist, args[2])
     
@@ -403,7 +410,7 @@ module.exports = {
                     })
                     let EmbedRemove = new MessageEmbed()
                     .setTitle("BLACKLIST")
-                    .setDescription(`<@${args[1]}> a été supprimé de la Blacklist`)
+                    .setDescription(`<@${args[2]}> ${message_language[languages[message.guild.id]]["RemovedFromBlacklist"]}`)
                     .setAuthor(message.author.tag, message.author.displayAvatarURL())
                     .setColor("#B80000")
                     .setTimestamp()
@@ -413,7 +420,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

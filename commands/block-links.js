@@ -1,14 +1,16 @@
 const { MessageEmbed } = require("discord.js");
-const fs = require('fs');
+const fs = require("fs")
+const fetch = require('node-fetch');
 const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
 const UserError = require("../Functions/UserError.js")
+const Error = require("../Functions/Error.js")
 
 module.exports = {
-    name: 'pub',
-    description: {"fr": "Envoie une publicité", "en": "Send an advertisement"},
-    aliases: ["ad", "ads"],
-    usage: "pub <title> <message>",
-    category: "Utility",
+    name: 'block-links',
+    description: {"fr": "Bloque les liens indésirés", "en": "Blocks the undesired links"},
+    aliases: ["bl"],
+    usage: "block-links help",
+    category: "Moderation",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
@@ -19,20 +21,62 @@ module.exports = {
             languages[message.guild.id] = "en"
         }
         try {
-            if(!(message.member.hasPermission("MANAGE_MESSAGES") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("MANAGE_MESSAGES", bot, message, __filename)
-            if(!args[0]) return UserError("SpecifyTitle", bot, message, __filename)
-            if(!args[1]) return UserError("SpecifyMessage", bot, message, __filename)
-            let title = args[0]
-            let description = args.slice(1).join(" ");
-
-            let Embed = new MessageEmbed()
-                .setTitle(`${message_language[languages[message.guild.id]]["Ads"]}`)
-                .addField(`${title}`, `${description}`)
+            const BlockedLinks = fs.readFileSync("./DataBase/blocked-links.txt", "utf8").split("\n")
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("ADMINISTRATOR", bot, message, __filename)
+            if(!args[0] || args[0]=="help" || !"helplistaddremove".includes(args[0])) {
+                let Embed = new MessageEmbed()
+                .setTitle("BLOCK-LINKS COMMANDS")
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                .setColor(message.member.displayHexColor)
+                .setColor("ORANGE")
+                .addField(`${prefix}block-links help`, `Affiche cette page`)
+                .addField(`${prefix}block-links list`, `Liste les liens indésirés`)
+                .addField(`${prefix}block-links add`, `Ajoute un lien indésiré`)
+                .addField(`${prefix}block-links remove`, `Supprime un lien indésiré`)
                 .setTimestamp()
-            message.channel.send(Embed)
-            message.delete()
+                message.lineReplyNoMention(Embed)
+            }
+            if(args[0]=="list") {
+                let Embed = new MessageEmbed()
+                .setTitle("BLOCK-LINKS LIST")
+                .setAuthor(message.author.tag, message.author.displayAvatarURL())
+                .setColor("ORANGE")
+                .setDescription(`*(Don't click)*\n${BlockedLinks.join("\n")}`)
+                .setTimestamp()
+                message.lineReplyNoMention(Embed)
+            }
+            if(args[0]=="add") {
+                if(!args[1]) return UserError("SpecifyLink", bot, message, __filename)
+                if(!args[1].includes("http") || !args[1].includes("://") ) return Error("SpecifyValidLink", bot, message, __filename)
+                BlockedLinks.push(args[1])
+                fs.writeFile("./DataBase/blocked-links.txt", BlockedLinks.join("\n"), (err) => {
+                    if (err) console.error();
+                })
+
+            }
+            if(args[0]=="remove") {
+                console.log("arr: "+BlockedLinks)
+                console.log("link: "+args[1])
+                if(!args[1]) return UserError("SpecifyLink", bot, message, __filename)
+                if(!args[1].includes("http") || !args[1].includes("://") ) return Error("SpecifyValidLink", bot, message, __filename)
+                if(!BlockedLinks.includes(args[1])) return Error("UnknownBlockedLink", bot, message, __filename)
+
+                for(var i=0;i<BlockedLinks.length;i++){
+                    if (BlockedLinks[i]===args[1]) { 
+                        BlockedLinks.splice(i, 1); 
+                        i--; 
+                    }
+                }
+
+                fs.writeFile("./DataBase/blocked-links.txt", BlockedLinks.join("\n"), (err) => {
+                    if (err) console.error();
+                })
+            }
+
+
+
+
+            // if(!args[0]) UserError("", bot, message, __filename)
+
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()

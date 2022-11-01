@@ -1,8 +1,9 @@
 {
-    "1.1.4": "Improved Error messages. Added Command Aliases. Better Error Preventer message. Improved Ping command. Badwords command soon !! Feeback and Support commands soon !! Multi-languages soon !!",
-    "1.1.3": "Fixing Ban & kick issues. Improved Error Preventer, Improved help page",
-    "1.1.2": "Added Mute & Unmute commands.\nReactionRole, Polls and Block-link soon !!",
-    "1.1.1": "Fixing permissions issues",
-    "1.1.0": "Added Error Preventer",
-    "1.0": "Bot Main Creation & commands:\n*help, hey, ping, settings, credits, invite, ban, unban, clear, kick, report, warn, warns, slowmode, lock, announce, avatar, dm, embed, ghostping, serverinfo, userinfo, bruh, roll, 8ball, love, experience*"
+    "1.1.5": "__6 February 2022__\nOfficially added French and English languages\nAdded Feedback & Support command.",
+    "1.1.4": "__2 February 2022__\nImproved Error messages. Added Command Aliases. \nBetter Error Preventer message. Added Rules command. \nImproved Ping command. Badwords command soon !! Feeback and Support commands soon !! \nMulti-languages soon !!",
+    "1.1.3": "__31 January 2022__\nFixing Ban & kick issues. \nImproved Error Preventer. \nImproved help page",
+    "1.1.2": "__30 January 2022__\nAdded Mute & Unmute commands.\nReactionRole, Polls and Block-link soon !!",
+    "1.1.1": "__21 January 2022__\nFixing permissions issues",
+    "1.1.0": "__14 January 2022__\nAdded Error Preventer",
+    "1.0": "__2 January 2022__\nBot Main Creation & commands:\n*help, hey, ping, settings, credits, invite, ban, unban, clear, kick, report, warn, warns, slowmode, lock, announce, avatar, dm, embed, ghostping, serverinfo, userinfo, bruh, roll, 8ball, love, experience*"
 }

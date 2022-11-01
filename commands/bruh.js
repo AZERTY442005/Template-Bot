@@ -3,7 +3,7 @@ const fs = require('fs')
 
 module.exports = {
     name: 'bruh',
-    description: "Envoie un GIF aléatoire de bruh",
+    description: {"fr": "Envoie un GIF aléatoire de bruh", "en": "Send a random GIF of bruh"},
     aliases: [],
     usage: "bruh",
     category: "Fun",
@@ -37,7 +37,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

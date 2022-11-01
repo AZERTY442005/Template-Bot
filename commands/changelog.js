@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 
 module.exports = {
     name: 'changelog',
-    description: "Changelog",
+    description: {"fr": "Changelog", "en": "Changelog"},
     aliases: ["cl"],
     usage: "changelog",
     category: "Default",
@@ -29,7 +29,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

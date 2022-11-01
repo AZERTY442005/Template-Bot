@@ -5,7 +5,7 @@ const Error = require("../Functions/Error.js")
 
 module.exports = {
     name: 'love',
-    description: "Fait rencontrer 2 membres",
+    description: {"fr": "Fait rencontrer 2 membres", "en": "Meet 2 members"},
     aliases: [],
     usage: "love",
     category: "Fun",
@@ -19,7 +19,7 @@ module.exports = {
                 if(!member.user.bot) MembersList.push(member.user)
             });
             // console.log(prettyFormat(MembersList))
-            if(MembersList.length==1) return Error("Vous êtes seul 😓", bot, message, __filename)
+            if(MembersList.length==1) return Error("YouAreAlone", bot, message, __filename)
             // console.log("RANDOM1 "+Math.random())
             // console.log("RANDOM2 "+Math.random())
             // console.log("RANDOM3 "+Math.random())
@@ -36,7 +36,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

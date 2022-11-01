@@ -6,7 +6,7 @@ const UserErrorNoPermissions = require("../../Functions/UserErrorNoPermissions.j
 
 module.exports = {
     name: 'reactionrole',
-    description: "Reactionrole",
+    description: {"fr": "Reactionrole", "en": "Reactionrole"},
     aliases: [],
     usage: "reactionrole <role> <reaction> <message>",
     category: "Utility",
@@ -16,11 +16,11 @@ module.exports = {
             let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
             const prefix = prefixes[message.guild.id].prefixes;
             if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Administrateur", bot, message, __filename)
-            if(!args[0]) return UserError("Veuillez préciser le rôle", bot, message, __filename)
-            if(!args[1]) return UserError("Veuillez préciser la réaction", bot, message, __filename)
-            if(!args[2]) return UserError("Veuillez préciser le message", bot, message, __filename)
+            if(!args[0]) return UserError("SpecifyRole", bot, message, __filename)
+            if(!args[1]) return UserError("SpecifyReaction", bot, message, __filename)
+            if(!args[2]) return UserError("SpecifyMessage", bot, message, __filename)
             
-            if(!message.mentions.roles.first()) UserError("Veuillez préciser un rôle valide", bot, message, __filename)
+            if(!message.mentions.roles.first()) Error("SpecifyValidRole", bot, message, __filename)
             const Role = message.mentions.roles.first()
 
             const Emoji = args[1]
@@ -34,7 +34,7 @@ module.exports = {
             message.channel.send(Embed).then(msg => {
                 msg.react(Emoji).catch(err => {
                     msg.delete()
-                    if(err=="DiscordAPIError: Unknown Emoji") return UserError("Veuillez préciser un émoji valide", bot, message, __filename)
+                    if(err=="DiscordAPIError: Unknown Emoji") return UserError("SpecifyValidEmoji", bot, message, __filename)
                 })
                 // const Filter = (reaction, user) => user.id == message.author.id;
                 // msg.awaitReactions(Filter, {max: 1, time: 30000, errors: ["time"]}).then(collected => {
@@ -90,7 +90,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

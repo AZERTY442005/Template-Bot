@@ -1,52 +1,52 @@
 const { MessageEmbed } = require("discord.js");
-const fs = require('fs')
+const fs = require("fs")
 const fetch = require('node-fetch');
-const {format: prettyFormat} = require('pretty-format');
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
 const UserError = require("../Functions/UserError.js")
+const Error = require("../Functions/Error.js")
+const Success = require("../Functions/Success.js")
 
 module.exports = {
-    name: '8ball',
-    description: {"fr": "8ball Magique", "en": "Magic 8ball"},
+    name: 'support',
+    description: {"fr": "Affiche une page de support", "en": "Displays a support page"},
     aliases: [],
-    usage: "8ball <wish>",
-    category: "Fun",
+    usage: "support",
+    category: "Default",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
+        const prefix = prefixes[message.guild.id].prefixes;
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
         try {
-            let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"))
-            const prefix = prefixes[message.guild.id].prefixes;
-            // if(!args[0]) return UserError("Vous devez spécifier le souhait", bot, message, __filename)
-            if(!args[0]) return UserError("SpecifyWish", bot, message, __filename)
-            const anwsers = [
-                "Essaye plus tard",
-                "Essaye encore",
-                "Pas d'avis",
-                "C'est ton destin",
-                "Le sort en est jeté",
-                "Une chance sur deux",
-                "Repose ta question",
-                "D'après moi oui",
-                "C'est certain",
-                "Oui absolument",
-                "Tu peux compter dessus",
-                "Sans aucun doute",
-                "Très probable",
-                "Oui ",
-                "C'est bien parti",
-                "C'est non",
-                "Peu probable",
-                "Faut pas rêver",
-                "N'y compte pas",
-                "Impossible ",
-            ]
-            // message.reply('`"'+args.slice(0).join(" ")+'"` '+anwsers[Math.floor(Math.random() * (anwsers.length - 1) + 1)])
-            let Embed = new MessageEmbed()
-                .setTitle("8BALL")
+            if(!args[0]) {
+                let Embed = new MessageEmbed()
+                .setTitle("SUPPORT")
+                .setDescription(`Pour toute questions ou demandes, rendez-vous sur le [Serveur de support](https://discord.gg/vWDzFa6dFN)`)
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                .setColor("GOLD")
-                .addField(args.slice(0).join(" "), anwsers[Math.floor(Math.random() * (anwsers.length - 1) + 1)])
+                .setColor("AQUA")
+                .addField(`Les questions plus posées`, `${prefix}support FAQ`)
+                .addField(`Feedback`, `${prefix}feedback`)
+                .addField(`Contact`, `developer.enoal.fauchille@gmail.com`)
                 .setTimestamp()
-            message.lineReplyNoMention(Embed)
+                message.channel.send(Embed)
+            }
+            if(args[0] && args[0].toLowerCase() == "faq") {
+                let Embed = new MessageEmbed()
+                .setTitle("SUPPORT FAQ")
+                .setAuthor(message.author.tag, message.author.displayAvatarURL())
+                .setColor("AQUA")
+                .addField(`Quelles sont les fonctionnalitées disponibles ?`, `Pour voir ceci, vous pouvez taper la commande \`${prefix}help\``)
+                // .addField(``, ``)
+                .addField(`\u200b`, `Vous pouvez suggérer des questions sur le [Serveur de support](https://discord.gg/vWDzFa6dFN) ou en utilisant \`${prefix}feedback <msg>\``)
+                .setTimestamp()
+                message.channel.send(Embed)
+            }
+
+
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()

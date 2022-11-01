@@ -6,19 +6,19 @@ const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'dm',
-    description: "Envoie un DM à un utilisateur",
+    description: {"fr": "Envoie un DM à un utilisateur", "en": "Send a DM to a user"},
     aliases: [],
     usage: "dm <user> <message>",
     category: "Utility",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Administrateur", bot, message, __filename)
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("ADMINISTRATOR", bot, message, __filename)
             let dmUser = message.mentions.users.first();
-            if(!args[0]) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
-            if(!dmUser) return Error("Veuillez préciser un utilisateur valide", bot, message, __filename)
+            if(!args[0]) return UserError("SpecifyUser", bot, message, __filename)
+            if(!dmUser) return Error("SpecifyValidUser", bot, message, __filename)
             //if(dmUser.id == "782885398316711966") return message.channel.send("ERREUR: Veuillez préciser un utilisateur valide (pas moi de préférence)")
-            if(!args[1]) return UserError("Veuillez préciser un message", bot, message, __filename)
+            if(!args[1]) return UserError("SpecifyMessage", bot, message, __filename)
             const dmMessage = args.slice(1).join(" ");
             // dmUser.send(`__Message de ${message.author} provenant de **${message.guild.name}**__\n${dmMessage}`)
 
@@ -34,7 +34,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

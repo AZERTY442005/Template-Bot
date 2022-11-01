@@ -2,49 +2,49 @@ const { MessageEmbed } = require("discord.js");
 const fs = require('fs')
 const fetch = require('node-fetch');
 const {format: prettyFormat} = require('pretty-format');
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
 const UserError = require("../Functions/UserError.js")
+const Error = require("../Functions/Error.js")
 
 module.exports = {
-    name: '8ball',
-    description: {"fr": "8ball Magique", "en": "Magic 8ball"},
-    aliases: [],
-    usage: "8ball <wish>",
-    category: "Fun",
+    name: 'language',
+    description: {"fr": "Change la langue du Bot", "en": "Change the Bot's language"},
+    aliases: ["langue", "lan", "lang"],
+    usage: "language <new-language>",
+    category: "Default",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"))
+        const prefix = prefixes[message.guild.id].prefixes;
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
         try {
-            let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"))
-            const prefix = prefixes[message.guild.id].prefixes;
-            // if(!args[0]) return UserError("Vous devez spécifier le souhait", bot, message, __filename)
-            if(!args[0]) return UserError("SpecifyWish", bot, message, __filename)
-            const anwsers = [
-                "Essaye plus tard",
-                "Essaye encore",
-                "Pas d'avis",
-                "C'est ton destin",
-                "Le sort en est jeté",
-                "Une chance sur deux",
-                "Repose ta question",
-                "D'après moi oui",
-                "C'est certain",
-                "Oui absolument",
-                "Tu peux compter dessus",
-                "Sans aucun doute",
-                "Très probable",
-                "Oui ",
-                "C'est bien parti",
-                "C'est non",
-                "Peu probable",
-                "Faut pas rêver",
-                "N'y compte pas",
-                "Impossible ",
-            ]
-            // message.reply('`"'+args.slice(0).join(" ")+'"` '+anwsers[Math.floor(Math.random() * (anwsers.length - 1) + 1)])
+            if(!(message.member.hasPermission("ADMINISTRATOR") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("ADMINISTRATOR", bot, message, __filename)
+            const ValidLanguages = ["fr", "en", "us"]
+            const LanguagesList = {
+                "fr": "Français",
+                "en": "English",
+                "us": "English"
+            }
+            if(!languages[message.guild.id]) {
+                languages[message.guild.id] = "en"
+            }
+            if(!args[0]) return UserError(`SpecifyLanguage (${ValidLanguages.join(",")})`, bot, message, __filename)
+            if(!ValidLanguages.includes(args[0])) return Error(`SpecifyValidLanguage (${ValidLanguages.join(",")})`, bot, message, __filename)
+            if(args[0]=="us") args[0] = "en"
+            languages[message.guild.id] = args[0]
+            fs.writeFile("./DataBase/languages.json", JSON.stringify(languages), (err) => {
+                if (err) console.error();
+            })
+
             let Embed = new MessageEmbed()
-                .setTitle("8BALL")
+                .setTitle(`${message_language[languages[message.guild.id]]["Language"]}`)
                 .setAuthor(message.author.tag, message.author.displayAvatarURL())
-                .setColor("GOLD")
-                .addField(args.slice(0).join(" "), anwsers[Math.floor(Math.random() * (anwsers.length - 1) + 1)])
+                .setColor("BLUE")
+                .addField(`${message_language[languages[message.guild.id]]["NewLanguage"]}`, `${LanguagesList[args[0]]}`)
                 .setTimestamp()
             message.lineReplyNoMention(Embed)
         } catch (error) { // ERROR PREVENTER

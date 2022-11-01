@@ -14,17 +14,22 @@ function getRoleIdFromMention(mention) {
 
 module.exports = {
     name: 'lock',
-    description: "Verrouille un salon",
+    description: {"fr": "Verrouille un salon", "en": "Lock a Channel"},
     aliases: [],
     usage: "lock <reason> (<role>)",
     category: "Moderation",
     execute(message, args, bot) {
+        let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
-        let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
         try {
-            if(!(message.member.hasPermission("MANAGE_CHANNELS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Gérer les salons", bot, message, __filename)
-            if(!args[0]) return UserError("Veuillez préciser la raison", bot, message, __filename)
+            if(!(message.member.hasPermission("MANAGE_CHANNELS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("MANAGE_CHANNELS", bot, message, __filename)
+            if(!args[0]) return UserError("SpecifyReason", bot, message, __filename)
             let Embed = new MessageEmbed()
             .setTitle("LOCK CHANNEL")
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
@@ -32,32 +37,32 @@ module.exports = {
             .setTimestamp()
             if(args[1]) {
                 const role = message.guild.roles.cache.find(role => role.name === args[1]) || message.guild.roles.cache.find(role => role.id === getRoleIdFromMention(args[1]))
-                if(!role) return UserError("Role inconnu", bot, message, __filename)
+                if(!role) return UserError("UnknownRole", bot, message, __filename)
                 if(message.channel.permissionsFor(role).has("SEND_MESSAGES")) { 
                     message.channel.updateOverwrite(role, { SEND_MESSAGES: false }, `${message.author.tag}: ${args[0]}`)
-                    Embed.setDescription(`Ce salon a été verrouillé pour ${role}`)
+                    Embed.setDescription(`${message_language[languages[message.guild.id]]["ChannelLockedFor"]} ${role}`)
                 } else {
                     // message.channel.permissionOverwrites.delete(message.author.id);
                     message.channel.updateOverwrite(role, { SEND_MESSAGES: true }, `${message.author.tag}: ${args[0]}`)
-                    Embed.setDescription(`Ce salon a été déverrouillé pour ${role}`)
+                    Embed.setDescription(`${message_language[languages[message.guild.id]]["ChannelLockedFor"]} ${role}`)
                 }
             } else {
                 if(message.channel.permissionsFor(message.guild.id).has("SEND_MESSAGES")) { 
                     message.channel.updateOverwrite(message.channel.guild.roles.everyone, { SEND_MESSAGES: false }, `${message.author.tag}: ${args[0]}`)
-                    Embed.setDescription(`Ce salon a été verrouillé pour @everyone`)
+                    Embed.setDescription(`${message_language[languages[message.guild.id]]["ChannelLockedFor"]} @everyone`)
                 } else {
                     // message.channel.permissionOverwrites.delete(message.author.id);
                     message.channel.updateOverwrite(message.channel.guild.roles.everyone, { SEND_MESSAGES: true }, `${message.author.tag}: ${args[0]}`)
-                    Embed.setDescription(`Ce salon a été déverrouillé pour @everyone`)
+                    Embed.setDescription(`${message_language[languages[message.guild.id]]["ChannelLockedFor"]} @everyone`)
                 }
             }
-            Embed.addField(`Raison`, `${args[0]}`)
+            Embed.addField(`${message_language[languages[message.guild.id]]["Reason"]}`, `${args[0]}`)
             message.delete()
             message.channel.send(Embed)
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

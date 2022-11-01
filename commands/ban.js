@@ -7,24 +7,29 @@ const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'ban',
-    description: "Ban un utilisateur",
+    description: {"fr": "Ban un utilisateur", "en": "Ban a user"},
     aliases: [],
     usage: "ban <user> <reason>",
     category: "Moderation",
     execute(message, args, bot) {
+        let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
         const prefix = prefixes[message.guild.id].prefixes;
-        let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
         try {
-            if(!(message.member.hasPermission("BAN_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Bannir des Membres", bot, message, __filename)
-            if(!args[0]) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
+            if(!(message.member.hasPermission("BAN_MEMBERS") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("BAN_MEMBERS", bot, message, __filename)
+            if(!args[0]) return UserError("SpecifyUser", bot, message, __filename)
             const userBan = message.mentions.users.first();
-            if(!userBan) return UserError("Veuillez préciser un utilisateur valide", bot, message, __filename)
+            if(!userBan) return Error("SpecifyValidUser", bot, message, __filename)
             const member = message.guild.member(userBan);
             let reasonBan = args.slice(1).join(" ");
             // if(!reasonBan) reasonBan = 'Non spécifié';
-            if(!reasonBan) return UserError("Veuillez préciser une raison", bot, message, __filename)
-            if(!member) return UserError("Veuillez préciser un utilisateur valide", bot, message, __filename)
+            if(!reasonBan) return UserError("SpecifyReason", bot, message, __filename)
+            if(!member) return Error("SpecifyValidUser", bot, message, __filename)
             // console.log(typeof message.author.tag)
             // console.log(typeof reasonBan)
             const ReasonLogs = message.author.tag+": "+reasonBan
@@ -35,29 +40,29 @@ module.exports = {
                 let AvatarBan = userBan.displayAvatarURL()
                 let EmbedBan = new MessageEmbed()
                     .setTitle(`BAN`)
-                    .setDescription(`Un utilisateur a été banni du serveur`)
+                    .setDescription(`${message_language[languages[message.guild.id]]["BanDescription"]}`)
                     .setAuthor(message.author.tag, message.author.displayAvatarURL())
                     .setColor(`RED`)
                     .setThumbnail(AvatarBan)
                     .addFields(
-                        {name:"Modérateur",value:`${message.author}`,inline:true},
-                        {name:"Membre",value:`${userBan}`,inline:true},
-                        {name:"Raison",value:`${reasonBan}`,inline:true},
+                        {name:`${message_language[languages[message.guild.id]]["Moderator"]}`,value:`${message.author}`,inline:true},
+                        {name:`${message_language[languages[message.guild.id]]["Member"]}`,value:`${userBan}`,inline:true},
+                        {name:`${message_language[languages[message.guild.id]]["Reason"]}`,value:`${reasonBan}`,inline:true},
                     )
                     .setTimestamp()
                 message.channel.send(EmbedBan)
                 message.delete()
             }).catch(error => {
                 if(error=="DiscordAPIError: Missing Permissions") {
-                    Error("Je n'ai pas les permissions suffisantes pour ban cet utilisateur", bot, message, __filename)
+                    Error("NoPermissionsToBan", bot, message, __filename)
                 } else {
-                    Error("Impossible de ban cet utilisateur", bot, message, __filename)
+                    Error("UnableToBan", bot, message, __filename)
                 }
             })
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

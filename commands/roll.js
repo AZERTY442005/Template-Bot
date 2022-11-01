@@ -5,12 +5,17 @@ const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'roll',
-    description: "Choisit un nombre aléatoire entre 1 et 6",
+    description: {"fr": "Choisit un nombre aléatoire", "en": "Choose a random number"},
     aliases: [],
     usage: "roll (<nb>)",
     category: "Fun",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
         try {
             let number
             let faces
@@ -18,7 +23,7 @@ module.exports = {
                 number = Math.floor(Math.random() * 6 + 1)
                 faces = 6
             } else {
-                if(!parseInt(args[0])) return UserError("Nombre invalide", bot, message, __filename)
+                if(!parseInt(args[0])) return UserError("InvalidNumber", bot, message, __filename)
                 number = Math.floor(Math.random() * parseInt(args[0]) + 1)
                 faces = args[0]
             }
@@ -27,13 +32,13 @@ module.exports = {
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor(message.member.displayHexColor)
             // .setThumbnail(message.author.displayAvatarURL())
-            .addField(`Dé à ${faces} faces`, `${number}`)
+            .addField(`${message_language[languages[message.guild.id]]["Roll1"]} ${faces} ${message_language[languages[message.guild.id]]["Roll2"]}`, `${number}`)
             .setTimestamp()
             message.channel.send(EmbedRoll)
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

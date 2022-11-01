@@ -7,41 +7,46 @@ const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'unmute',
-    description: "Unmute un membre",
+    description: {"fr": "Unmute un membre", "en": "Unmute a member"},
     aliases: [],
     usage: "unmute <user> (<reason>)",
     category: "Moderation",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
+        const prefix = prefixes[message.guild.id].prefixes;
+        let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
+        let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
+        if(!languages[message.guild.id]) {
+            languages[message.guild.id] = "en"
+        }
         try {
-            let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
-            const prefix = prefixes[message.guild.id].prefixes;
-            if(!message.member.hasPermission("KICK_MEMBERS") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="off") return UserErrorNoPermissions("Kick des Membres", bot, message, __filename)
-            if(!args[0]) return UserError("Veuillez préciser un utilisateur", bot, message, __filename)
+            if(!message.member.hasPermission("KICK_MEMBERS") && message.author.id != config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="off") return UserErrorNoPermissions("KICK_MEMBERS", bot, message, __filename)
+            if(!args[0]) return UserError("SpecifyUser", bot, message, __filename)
 
             const User = message.mentions.users.first();
-            if(!User) return UserError("Veuillez préciser un utilisateur valide", bot, message, __filename)
+            if(!User) return Error("SpecifyValidUser", bot, message, __filename)
 
             let reason = args.slice(1).join(" ");
-            if(!reason) reason = 'Non spécifié';
+            if(!reason) reason = `${message_language[languages[message.guild.id]]["Unspecified"]}`;
             
             function RemoveMuteRole() {
                 let MuteRole = message.guild.roles.cache.find(role => role.name === "Muted");
-                if(!message.guild.member(User).roles.cache.some(role => role.name === "Muted")) return Error("Ce membre n'est pas Mute", bot, message, __filename)
+                if(!message.guild.member(User).roles.cache.some(role => role.name === "Muted")) return Error("ThisUserIsNotMuted", bot, message, __filename)
                 message.guild.member(User).roles.remove(MuteRole, `${message.author.tag}: ${reason}`).catch(console.error);
 
 
 
                 const Embed = new MessageEmbed()
                 .setTitle("UNMUTE")
-                .setDescription(`Un utilisateur a été unmute`)
+                .setDescription(`${message_language[languages[message.guild.id]]["UnmuteDescription"]}`)
                 .setAuthor(User.tag, User.displayAvatarURL())
                 .setColor("#79E300")
                 .setThumbnail(User.displayAvatarURL())
                 .addFields(
-                    {name:"Modérateur",value:`${message.author}`,inline:true},
-                    {name:"Membre",value:`${User}`,inline:true},
-                    {name:"Raison",value:`${reason}`,inline:true},
+                    {name:`${message_language[languages[message.guild.id]]["Moderator"]}`,value:`${message.author}`,inline:true},
+                    {name:`${message_language[languages[message.guild.id]]["Member"]}`,value:`${User}`,inline:true},
+                    {name:`${message_language[languages[message.guild.id]]["Reason"]}`,value:`${reason}`,inline:true},
                 )
                 .setTimestamp()
                 message.delete()
@@ -84,7 +89,7 @@ module.exports = {
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

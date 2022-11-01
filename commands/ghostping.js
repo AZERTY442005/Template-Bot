@@ -5,20 +5,20 @@ const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'ghostping',
-    description: "Envoie un ghostping",
+    description: {"fr": "Envoie un ghostping", "en": "Send a ghostping"},
     aliases: [],
     usage: "ghostping <mention>",
     category: "Utility",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("MANAGE_MESSAGES") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Gérer les Messages", bot, message, __filename)
-            if(!args[0]) return UserError("Veuillez préciser la mention", bot, message, __filename)
+            if(!(message.member.hasPermission("MANAGE_MESSAGES") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("MANAGE_MESSAGES", bot, message, __filename)
+            if(!args[0]) return UserError("SpecifyMention", bot, message, __filename)
             message.delete()
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

@@ -5,24 +5,24 @@ const UserError = require("../Functions/UserError.js")
 
 module.exports = {
     name: 'say',
-    description: "Me fait parler",
+     description: {"fr": "Me fait parler", "en": "Makes me talk"},
     aliases: [],
     usage: "say <message>",
     category: "Utility",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
         try {
-            if(!(message.member.hasPermission("MANAGE_MESSAGES") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("Gérer les Messages", bot, message, __filename)
+            if(!(message.member.hasPermission("MANAGE_MESSAGES") || (message.author.id == config["CreatorID"] && fs.readFileSync("./DataBase/admin.txt", "utf8")=="on"))) return UserErrorNoPermissions("MANAGE_MESSAGES", bot, message, __filename)
             let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
             const prefix = prefixes[message.guild.id].prefixes;
             message.delete()
             argsresult = args.slice(0).join(" ");
-            if(!argsresult) return UserError("Veuillez préciser un message", bot, message, __filename)
+            if(!argsresult) return UserError("SpecifyMessage", bot, message, __filename)
             message.channel.send(argsresult)
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
-            .setTitle(`Une erreur est survenue`)
+            .setTitle(`${message_language[languages[message.guild.id]]["ErrorPreventer"]}`)
             .setAuthor(message.author.tag, message.author.displayAvatarURL())
             .setColor("RED")
             message.lineReplyNoMention(Embed)

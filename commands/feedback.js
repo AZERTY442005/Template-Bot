@@ -1,48 +1,73 @@
 const { MessageEmbed } = require("discord.js");
-const fs = require('fs')
+const fs = require("fs")
 const fetch = require('node-fetch');
+const UserErrorNoPermissions = require("../Functions/UserErrorNoPermissions.js")
 const UserError = require("../Functions/UserError.js")
+const Error = require("../Functions/Error.js")
+const Success = require("../Functions/Success.js")
+
+const FeedbackCooldown = new Set()
 
 module.exports = {
-    name: 'report',
-    description: {"fr": "Rapporte un membre", "en": "Report a member"},
-    aliases: [],
-    usage: "report <user> <reason>",
-    category: "Moderation",
+    name: 'feedback',
+    description: {"fr": "Envoie un retour d'utilisation au développeur", "en": "Send a return of use to the developer"},
+    aliases: ["fb"],
+    usage: "feedback <message>",
+    category: "Default",
     execute(message, args, bot) {
         let config = JSON.parse(fs.readFileSync("./config.json", "utf8"));
+        let prefixes = JSON.parse(fs.readFileSync("./DataBase/prefixes.json", "utf8"));
+        const prefix = prefixes[message.guild.id].prefixes;
         let languages = JSON.parse(fs.readFileSync("./DataBase/languages.json", "utf8"));
         let message_language = JSON.parse(fs.readFileSync("./DataBase/message-language.json", "utf8"));
         if(!languages[message.guild.id]) {
             languages[message.guild.id] = "en"
         }
         try {
-            let UserReport = message.mentions.users.first()||null
-            const ReasonReport = args.slice(1).join(" ");
-            if(UserReport==null) return UserError("SpecifyUser", bot, message, __filename)
-            if(!args[1]) return UserError("SpecifyReason", bot, message, __filename)
-            message.delete()
-            let AvatarReport = UserReport.displayAvatarURL()
-            let ChannelReport = message.guild.channels.cache.find(channel => channel.name === "reports")
-            console.log(ChannelReport)
-            let EmbedReport = new MessageEmbed()
-            .setTitle(`REPORT`)
-            .setDescription(`${message_language[languages[message.guild.id]]["ReportDescription"]}`)
-            .setAuthor(message.author.tag, message.author.displayAvatarURL())
-            .setTimestamp()
-            .setColor("YELLOW")
-            .setThumbnail(AvatarReport)
-            .addFields(
-                {name:`${message_language[languages[message.guild.id]]["Reporter"]}`,value:`${message.author.tag}`,inline:true},
-                {name:`${message_language[languages[message.guild.id]]["Member"]}`,value:`${UserReport.tag}`,inline:true},
-                {name:`${message_language[languages[message.guild.id]]["Reason"]}`,value:`${ReasonReport}`,inline:true},
-            )
-            .setTimestamp()
-            if (ChannelReport == null) {
-                message.channel.send(EmbedReport)
+            if(!args[0]) return UserError("SpecifyMessage", bot, message, __filename)
+
+            if (FeedbackCooldown.has(message.author.id) && !message.member.hasPermission("ADMINISTRATOR")) { // Command Cooldown
+                const Embed = new MessageEmbed()
+                .setAuthor(message.author.tag, message.author.displayAvatarURL())
+                .setDescription(`:alarm_clock: ${message_language[languages[message.guild.id]]["WaitFeedback"]}`)
+                .setColor("ORANGE")
+                message.lineReplyNoMention(Embed)
             } else {
-                ChannelReport.send(EmbedReport)
+                var URL = fs.readFileSync("./DataBase/webhook-logs-url.txt", "utf8") // Webhook Logs System
+                fetch(URL, {
+                    "method":"POST",
+                    "headers": {"Content-Type": "application/json"},
+                    "body": JSON.stringify(
+                        {
+                            "username": `${config["BotInfo"]["name"]} Logs`,
+                            "avatar_url": `${config["BotInfo"]["IconURL"]}`,
+                            "content": `<@${config["CreatorID"]}>`,
+                            "embeds": [
+                            {
+                                "title": "__Feedback__",
+                                "color": 1752220,
+                                "timestamp": new Date(),
+                                "author": {
+                                    "name": `${message.author.username}`,
+                                    "icon_url": `${message.author.displayAvatarURL()}`,
+                                },
+                                "description": `${args.slice(0).join(" ")}`
+                            }
+                            ]
+                        }
+                    )
+                })
+                .catch(err => PassThrough);
+
+                Success("SentSuccess", bot, message, __filename)
+
+                // UPDATE COOLDOWN
+                FeedbackCooldown.add(message.author.id);
+                setTimeout(() => {
+                    FeedbackCooldown.delete(message.author.id);
+                }, 300000); // DELAY
             }
+
         } catch (error) { // ERROR PREVENTER
             console.error(`${error}`)
             Embed = new MessageEmbed()
